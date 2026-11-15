@@ -1,0 +1,223 @@
+<title>מפת הדרך לדוח RainTomorrow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;700&display=swap">
+<style>
+/* Layout: a horizontal stage strip (the pipeline) on top, then one block per stage with a checklist. Same palette as the other project pages. */
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface2:#efede7; --ink:#1c1d1f; --muted:#5d5c57;
+  --line:#e0ddd4; --accent:#1f5f8b; --accent-soft:#e2edf5;
+  --ok:#2d6a3e; --ok-soft:#e3f1e6; --warn:#995800; --warn-soft:#fbf0dc;
+  --code-bg:#f1efe8;
+  --font-body:"Heebo","Segoe UI","Arial Hebrew",Arial,sans-serif;
+  --font-head:"Rubik","Heebo","Segoe UI",Arial,sans-serif;
+  --font-mono:Consolas,"Cascadia Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171a; --surface:#1e2125; --surface2:#262a2f; --ink:#ebeae5; --muted:#a4a19a;
+    --line:#33373d; --accent:#7fb6de; --accent-soft:#1c3041;
+    --ok:#88c99b; --ok-soft:#1a2f21; --warn:#e6b25e; --warn-soft:#382b15;
+    --code-bg:#1a1d21; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171a; --surface:#1e2125; --surface2:#262a2f; --ink:#ebeae5; --muted:#a4a19a;
+  --line:#33373d; --accent:#7fb6de; --accent-soft:#1c3041;
+  --ok:#88c99b; --ok-soft:#1a2f21; --warn:#e6b25e; --warn-soft:#382b15;
+  --code-bg:#1a1d21; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.65;direction:rtl}
+.wrap{max-width:960px;margin:0 auto;padding-block:32px 72px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--font-head);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:2rem}
+h2{font-size:1.3rem}
+p{margin:0;max-width:70ch}
+.kicker{color:var(--accent);font-weight:500;font-size:.9rem;letter-spacing:.02em}
+.lead{color:var(--muted);font-size:1.05rem}
+.small{font-size:.86rem;color:var(--muted)}
+header{display:flex;flex-direction:column;gap:8px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+
+/* pipeline strip */
+.pipe{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:stretch}
+@media (max-width:720px){.pipe{grid-template-columns:1fr}}
+.node{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+  display:flex;flex-direction:column;gap:4px;min-width:0;text-decoration:none;color:inherit}
+.node:hover{border-color:var(--accent)}
+.node:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.node .tag{font-family:var(--font-mono);font-size:.78rem;color:var(--muted)}
+.node .name{font-family:var(--font-head);font-weight:500;font-size:.98rem;line-height:1.3}
+.node .sub{font-size:.8rem;color:var(--muted)}
+.node.done{background:var(--ok-soft);border-color:transparent}
+.node.done .tag{color:var(--ok)}
+.node.next{border:2px solid var(--accent)}
+.bar{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:auto}
+.bar span{display:block;height:100%;background:var(--ok);width:0;transition:width .25s}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+.parallel{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--warn-soft);border-radius:8px;padding:8px 12px;font-size:.92rem}
+.parallel b{color:var(--warn)}
+
+/* stage blocks */
+.stage{display:flex;flex-direction:column;gap:12px;padding-top:18px;border-top:1px solid var(--line)}
+.stage-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.stage-head .letter{font-family:var(--font-mono);color:var(--accent);font-size:.95rem}
+.chip{font-size:.75rem;padding:1px 9px;border-radius:99px;white-space:nowrap;font-weight:500}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+.chip.next{background:var(--accent-soft);color:var(--accent)}
+.chip.wait{background:var(--warn-soft);color:var(--warn)}
+.chip.todo{background:var(--surface2);color:var(--muted)}
+.count{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-inline-start:auto}
+
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+ul.tasks li{display:grid;grid-template-columns:22px 3.2em minmax(0,1fr);gap:8px;align-items:start;
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
+ul.tasks input{width:17px;height:17px;margin:4px 0 0;accent-color:var(--ok)}
+ul.tasks .id{font-family:var(--font-mono);font-size:.82rem;color:var(--muted);padding-top:3px;direction:ltr;text-align:start}
+ul.tasks .txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+ul.tasks label{cursor:pointer;font-weight:500}
+ul.tasks .out{font-size:.88rem;color:var(--muted)}
+ul.tasks li:has(input:checked){background:var(--surface2)}
+ul.tasks li:has(input:checked) label{color:var(--muted);text-decoration:line-through}
+ul.tasks li.block{border-color:var(--warn)}
+.note{border-inline-start:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:6px}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.finish{background:var(--ok-soft);border-radius:10px;padding:14px 18px;display:flex;flex-direction:column;gap:6px}
+.finish h2{color:var(--ok)}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:12px}
+button.reset{font:inherit;font-size:.85rem;background:none;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:2px 10px;cursor:pointer}
+button.reset:hover{border-color:var(--accent);color:var(--accent)}
+button.reset:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">למידת מכונה · פרויקט חלק א' · קבוצה 58</div>
+  <h1>מפת הדרך: מהמצב היום עד מוכנות לדוח</h1>
+  <p class="lead">"מוכן לדוח" אומר שהמחברת גמורה (סעיפים 1–5), כל המספרים והגרפים סופיים, ויש תשובות מהמתרגל. משם נשאר רק לכתוב.</p>
+  <p class="small">אפשר לסמן ✓ ליד כל משימה שהושלמה. הסימונים נשמרים רק בדפדפן הזה, ולא מופיעים אצל אחרים.</p>
+</header>
+
+<!-- pipeline strip -->
+<nav class="pipe" aria-label="שלבי הדרך">
+  <a class="node done" href="#s-done"><span class="tag">✓ 1–3</span><span class="name">איסוף, חישה, מטרה ו-EDA</span><span class="sub">גמור</span></a>
+  <a class="node next" href="#s-a"><span class="tag">A · סעיף 4</span><span class="name">איכות נתונים</span><span class="sub">הבא בתור</span><span class="bar"><span data-bar="a"></span></span></a>
+  <a class="node" href="#s-b"><span class="tag">B · סעיף 5</span><span class="name">הכנת נתונים</span><span class="sub">30 נק'</span><span class="bar"><span data-bar="b"></span></span></a>
+  <a class="node" href="#s-c"><span class="tag">C</span><span class="name">סגירת המחברת</span><span class="sub">הרצה סופית</span><span class="bar"><span data-bar="c"></span></span></a>
+  <a class="node" href="#s-d"><span class="tag">D</span><span class="name">חומרים לדוח</span><span class="sub">גרפים וטקסט</span><span class="bar"><span data-bar="d"></span></span></a>
+</nav>
+<div class="parallel"><b>במקביל:</b> שאלות למתרגל. התשובה ל-Q2 חוסמת את משימה B4. <a href="#s-q">לשאלות</a></div>
+
+<!-- done -->
+<section class="stage" id="s-done" aria-labelledby="h-done">
+  <div class="stage-head"><h2 id="h-done">מה כבר גמור</h2><span class="chip done">✓</span></div>
+  <p>איסוף הנתונים (102 קובצי JSON), <code>sensing.py</code>, משתנה המטרה (36.2% ימים גשומים), וסעיף 3 במחברת, הבנת הנתונים, עם 9 גרפים. גם שלושת השיפורים לטקסט של סעיף 3 בוצעו ונדחפו ל-GitHub. בערך 40 מתוך 100 נקודות מכוסות, לפני בדיקה ודוח.</p>
+</section>
+
+<!-- A -->
+<section class="stage" id="s-a" aria-labelledby="h-a" data-stage="a">
+  <div class="stage-head"><span class="letter">A</span><h2 id="h-a">איכות נתונים (מחברת, סעיף 4)</h2><span class="chip next">הבא בתור</span><span class="count" data-count="a"></span></div>
+  <ul class="tasks">
+    <li><input type="checkbox" id="t-a1"><span class="id">A1</span><span class="txt"><label for="t-a1">להראות בקוד שאין ערכים חסרים, ולהסביר למה</label><span class="out">תוצר: טבלה עם 0 בכל עמודה, ומשפט על reanalysis</span></span></li>
+    <li><input type="checkbox" id="t-a2"><span class="id">A2</span><span class="txt"><label for="t-a2">8 בדיקות היגיון</label><span class="out">מינימום מעל מקסימום, ממוצע מחוץ לטווח, משקעים שליליים, גשם מעל סך המשקעים, שעות מחוץ ל-0–24, משקעים בלי שעות, רוח מחוץ ל-0–360, קוד גשם בלי משקעים. תוצר: טבלה של בדיקה ← כמה מקרים ← מה עושים</span></span></li>
+    <li><input type="checkbox" id="t-a3"><span class="id">A3</span><span class="txt"><label for="t-a3">ערכים קיצוניים</label><span class="out">ניו יורק 4.10.2022 עם 183.6 מ"מ, מול טייפון Hagibis (טוקיו 12.10.2019, ‏150.5 מ"מ) ושאר הימים הקיצוניים. תוצר: החלטה אם זה אירוע אמיתי או שגיאה</span></span></li>
+    <li><input type="checkbox" id="t-a4"><span class="id">A4</span><span class="txt"><label for="t-a4">החלפת המודל ב-2017</label><span class="out">האם רואים "קפיצה" במעבר מרשת של 25 או 11 ק"מ לרשת של 9 ק"מ? תוצר: גרף לפני ואחרי, ומסקנה. מועמד לבונוס</span></span></li>
+    <li><input type="checkbox" id="t-a5"><span class="id">A5</span><span class="txt"><label for="t-a5">סיכום: מה עושים עם כל ממצא בסעיף 5</label><span class="out">תוצר: פסקה קצרה</span></span></li>
+  </ul>
+</section>
+
+<!-- Q -->
+<section class="stage" id="s-q" aria-labelledby="h-q" data-stage="q">
+  <div class="stage-head"><span class="letter">Q</span><h2 id="h-q">במקביל: שאלות למתרגל</h2><span class="chip wait">לשלוח עכשיו</span><span class="count" data-count="q"></span></div>
+  <ul class="tasks">
+    <li><input type="checkbox" id="t-q1"><span class="id">Q1</span><span class="txt"><label for="t-q1">האם <code>RainTomorrow</code> צריך להיווצר ב-<code>sensing.py</code> או במחברת?</label><span class="out">אם התשובה היא <code>sensing.py</code>, צריך להעביר את הקוד לשם. כרגע הוא במחברת</span></span></li>
+    <li class="block"><input type="checkbox" id="t-q2"><span class="id">Q2</span><span class="txt"><label for="t-q2">כמה ימים יש בכל קובץ JSON של סט המבחן בחלק ב'?</label><span class="out">חוסם את B4: קובע אם מותר להשתמש במאפייני עבר, כמו גשם אתמול או ממוצע של 3 ימים</span></span></li>
+  </ul>
+</section>
+
+<!-- B -->
+<section class="stage" id="s-b" aria-labelledby="h-b" data-stage="b">
+  <div class="stage-head"><span class="letter">B</span><h2 id="h-b">הכנת נתונים (מחברת, סעיף 5)</h2><span class="chip todo">30 נק'</span><span class="count" data-count="b"></span></div>
+  <ul class="tasks">
+    <li><input type="checkbox" id="t-b1"><span class="id">B1</span><span class="txt"><label for="t-b1">בחירת מאפיינים: להסיר את <code>rain_sum</code> ושלוש טמפרטורות, עם נימוק</label><span class="out">מבוסס על 3.4 ו-3.7 (מתאם 0.92–0.99; <code>rain_sum</code> שונה רק בימי שלג)</span></span></li>
+    <li><input type="checkbox" id="t-b2"><span class="id">B2</span><span class="txt"><label for="t-b2">חסרים ותצפיות חריגות: לנמק למה זה לא רלוונטי, או לטפל במה שנמצא בשלב A</label><span class="out">מבוסס על שלב A</span></span></li>
+    <li><input type="checkbox" id="t-b3"><span class="id">B3</span><span class="txt"><label for="t-b3">דיסקרטיזציה וקיבוץ</label><span class="out">משקעים: 0 / פחות מ-1 / 1–10 / מעל 10 מ"מ. <code>weather_code</code> לקבוצות לפי סוג ועוצמה (מבוסס על 3.2 ו-3.6)</span></span></li>
+    <li class="block"><input type="checkbox" id="t-b4"><span class="id">B4</span><span class="txt"><label for="t-b4">מאפיינים חדשים</label><span class="out"><code>rain_today</code>, <code>temp_range</code>, חודש ב-sin/cos, עונה לפי חצי כדור, רוח u/v, דגל שלג, One-Hot לעיר. מאפייני עבר רק אחרי תשובה ל-Q2</span></span></li>
+    <li><input type="checkbox" id="t-b5"><span class="id">B5</span><span class="txt"><label for="t-b5">פונקציה אחת שהופכת JSON גולמי למאפיינים</label><span class="out">לבדוק שהיא עובדת על JSON בודד, כמו שיגיע במבחן של חלק ב'</span></span></li>
+    <li><input type="checkbox" id="t-b6"><span class="id">B6</span><span class="txt"><label for="t-b6">לבדוק שהמאפיינים החדשים באמת עוזרים</label><span class="out">למשל עם Mutual Information. מומלץ, ושווה נקודות</span></span></li>
+    <li><input type="checkbox" id="t-b7"><span class="id">B7</span><span class="txt"><label for="t-b7">לשמור את <code>final_dataset.csv</code> המעודכן</label><span class="out">דרישת ההגשה</span></span></li>
+  </ul>
+</section>
+
+<!-- C -->
+<section class="stage" id="s-c" aria-labelledby="h-c" data-stage="c">
+  <div class="stage-head"><span class="letter">C</span><h2 id="h-c">סגירת המחברת</h2><span class="chip todo">לפני הדוח</span><span class="count" data-count="c"></span></div>
+  <ul class="tasks">
+    <li><input type="checkbox" id="t-c1"><span class="id">C1</span><span class="txt"><label for="t-c1">להריץ את המחברת מתחילתה ועד סופה (Restart &amp; Run All), בלי שגיאות</label><span class="out">ולשמור אותה עם כל הפלטים</span></span></li>
+    <li><input type="checkbox" id="t-c2"><span class="id">C2</span><span class="txt"><label for="t-c2">אין TODO, וכל גרף מלווה בהסבר</label><span class="out">למה עשינו ← מה יצא ← מה למדנו ← מה ההשלכה</span></span></li>
+    <li><input type="checkbox" id="t-c3"><span class="id">C3</span><span class="txt"><label for="t-c3">לעדכן את <code>README.md</code> ואת <code>requirements.txt</code></label><span class="out">מבנה הפרויקט, תפקיד כל קובץ, הוראות הרצה</span></span></li>
+    <li><input type="checkbox" id="t-c4"><span class="id">C4</span><span class="txt"><label for="t-c4">לייצא את הגרפים לדוח מתוך המחברת</label><span class="out">ברזולוציה גבוהה ובקוד שאפשר להריץ שוב. התיקייה <code>report_figures</code> כבר התחילה את זה, אבל הקוד שיצר אותה חסר</span></span></li>
+    <li><input type="checkbox" id="t-c5"><span class="id">C5</span><span class="txt"><label for="t-c5">commit ודחיפה ל-GitHub</label><span class="out">אפשר מתוך Cursor, בחלונית Source Control</span></span></li>
+  </ul>
+</section>
+
+<!-- D -->
+<section class="stage" id="s-d" aria-labelledby="h-d" data-stage="d">
+  <div class="stage-head"><span class="letter">D</span><h2 id="h-d">חומרים לדוח</h2><span class="chip todo">אחרון</span><span class="count" data-count="d"></span></div>
+  <ul class="tasks">
+    <li><input type="checkbox" id="t-d1"><span class="id">D1</span><span class="txt"><label for="t-d1">הגדרת הבעיה (5 נק')</label><span class="out">רקע, מחקרים קודמים (NWP, ו-"Rain in Australia" מ-Kaggle), ושאלת המחקר במשפט אחד</span></span></li>
+    <li><input type="checkbox" id="t-d2"><span class="id">D2</span><span class="txt"><label for="t-d2">לבחור 8–10 גרפים לכל הדוח</label><span class="out">כ-5 להבנת הנתונים וכ-3 להכנה. מומלצים: KDE, <code>weather_code</code>, מתאמים, גרפים קוטביים של רוח, גשם מחר לפי קוד</span></span></li>
+    <li><input type="checkbox" id="t-d3"><span class="id">D3</span><span class="txt"><label for="t-d3">שלד הדוח: פרקים והקצאת עמודים (סך הכל עד 10)</label><span class="out">איסוף וחישה 1.5 · הגדרת הבעיה 0.5–1 · הבנת נתונים ואיכות 4 · הכנה 3 · סיכום 0.5</span></span></li>
+    <li><input type="checkbox" id="t-d4"><span class="id">D4</span><span class="txt"><label for="t-d4">לתרגם כל ממצא לעברית במבנה הנדרש</label><span class="out">למה עשינו ← מה יצא ← מה למדנו ← מה ההשלכה</span></span></li>
+  </ul>
+</section>
+
+<div class="finish">
+  <h2>כש-A, B, C ו-D מסומנים, אפשר לכתוב את הדוח</h2>
+  <p>אחרי הדוח נשארת רק האריזה: <code>Group_58.zip</code> עם ה-PDF וכל קובצי הפרויקט, בלי <code>.venv</code> ובלי קבצי מערכת.</p>
+</div>
+
+<div class="note warn"><b>לאורך כל הדרך:</b> לעבור על הקוד של כל סעיף מיד אחרי שהוא נגמר, ולא להשאיר את הכל לסוף. ההנחיות מורידות נקודות על קוד שלא מבינים.</div>
+
+<footer>קבוצה 58 · מצב נכון ל-15 בנובמבר 2026 · <button class="reset" type="button" id="reset">ניקוי הסימונים בדפדפן הזה</button></footer>
+</div>
+
+<script>
+(function(){
+  var KEY = "rain-roadmap-checks";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  var boxes = Array.prototype.slice.call(document.querySelectorAll("ul.tasks input[type=checkbox]"));
+
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  function update(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-stage]"), function(sec){
+      var id = sec.getAttribute("data-stage");
+      var list = sec.querySelectorAll("input[type=checkbox]");
+      var done = 0;
+      Array.prototype.forEach.call(list, function(b){ if (b.checked) done++; });
+      var countEl = document.querySelector('[data-count="' + id + '"]');
+      if (countEl) countEl.textContent = done + " מתוך " + list.length;
+      var bar = document.querySelector('[data-bar="' + id + '"]');
+      if (bar) bar.style.width = (list.length ? Math.round(done * 100 / list.length) : 0) + "%";
+    });
+  }
+
+  boxes.forEach(function(b){
+    if (state[b.id]) b.checked = true;
+    b.addEventListener("change", function(){ state[b.id] = b.checked; save(); update(); });
+  });
+  document.getElementById("reset").addEventListener("click", function(){
+    state = {}; save();
+    boxes.forEach(function(b){ b.checked = false; });
+    update();
+  });
+  update();
+})();
+</script>
