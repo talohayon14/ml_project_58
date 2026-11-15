@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>סקירת פרויקט RainTomorrow</title>
+<style>
+:root{
+  --bg:#f7f6f2; --surface:#ffffff; --surface2:#f0eee8; --ink:#1d1d1b; --muted:#5f5d57;
+  --line:#e2dfd6; --accent:#1f5f8b; --accent-soft:#e3eef6; --warn:#9a5a00; --warn-soft:#fdf1dd;
+  --danger:#a33a2a; --danger-soft:#fbe6e2; --ok:#2d6a3e; --ok-soft:#e4f2e7; --code-bg:#f3f1ea;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#16171a; --surface:#1f2125; --surface2:#26292e; --ink:#ecebe6; --muted:#a6a39b;
+    --line:#33363c; --accent:#7db6e0; --accent-soft:#1d3142; --warn:#e8b25c; --warn-soft:#3a2c14;
+    --danger:#f08a78; --danger-soft:#3b1f1a; --ok:#86c999; --ok-soft:#1b3022; --code-bg:#1a1c20;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16171a; --surface:#1f2125; --surface2:#26292e; --ink:#ecebe6; --muted:#a6a39b;
+  --line:#33363c; --accent:#7db6e0; --accent-soft:#1d3142; --warn:#e8b25c; --warn-soft:#3a2c14;
+  --danger:#f08a78; --danger-soft:#3b1f1a; --ok:#86c999; --ok-soft:#1b3022; --code-bg:#1a1c20;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI","Arial Hebrew",Arial,"Noto Sans Hebrew",sans-serif;font-size:16px;line-height:1.7}
+.wrap{max-width:1000px;margin:0 auto;padding-inline:16px;padding-block:28px 80px}
+header.hero{padding-block:16px 8px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.kicker{color:var(--accent);font-weight:600;font-size:.9rem}
+h1{font-size:2rem;line-height:1.25;margin:.2em 0 .3em}
+h2{font-size:1.5rem;margin:2.4em 0 .6em;padding-top:.4em;border-top:1px solid var(--line)}
+h3{font-size:1.15rem;margin:1.6em 0 .4em}
+h4{font-size:1rem;margin:1.1em 0 .3em}
+p{margin:.5em 0}
+.lead{color:var(--muted);font-size:1.05rem;max-width:66ch}
+a{color:var(--accent)}
+nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:18px 0}
+nav.toc ol{margin:.3em 0;padding-inline-start:1.4em;columns:2;column-gap:2em}
+nav.toc li{break-inside:avoid;margin:.15em 0}
+@media (max-width:640px){nav.toc ol{columns:1}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0}
+.box{border-radius:8px;padding:10px 14px;margin:12px 0;border-inline-start:4px solid}
+.box.why{background:var(--accent-soft);border-color:var(--accent)}
+.box.warn{background:var(--warn-soft);border-color:var(--warn)}
+.box.danger{background:var(--danger-soft);border-color:var(--danger)}
+.box.ok{background:var(--ok-soft);border-color:var(--ok)}
+.box b.t{display:block;margin-bottom:2px}
+code,pre{font-family:Consolas,"Cascadia Mono",Menlo,monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+  overflow-x:auto;direction:ltr;text-align:left;line-height:1.5}
+pre code{background:none;padding:0}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;background:var(--surface);font-size:.94rem}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:start;vertical-align:top}
+th{background:var(--surface2);font-weight:600}
+.tag{display:inline-block;font-size:.78rem;padding:0 8px;border-radius:99px;background:var(--surface2);
+  border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.st{display:inline-block;font-size:.8rem;font-weight:600;padding:1px 10px;border-radius:99px;white-space:nowrap}
+.st.done{background:var(--ok-soft);color:var(--ok)}
+.st.part{background:var(--warn-soft);color:var(--warn)}
+.st.todo{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+/* status overview */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:14px 0}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.kpi .v{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+.kpi .l{font-size:.85rem;color:var(--muted)}
+.bar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--surface2);margin:6px 0}
+.bar span{display:block;height:100%}
+/* pipeline */
+.pipe{list-style:none;margin:18px 0;padding:0}
+.stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px 10px;margin:0 0 14px;margin-inline-start:44px}
+.stage::before{content:attr(data-n);position:absolute;inset-inline-start:-44px;top:12px;width:32px;height:32px;
+  border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.stage.is-done::before{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.stage.is-part::before{background:var(--warn);color:var(--surface);border-color:var(--warn)}
+.stage:not(:last-child)::after{content:"";position:absolute;inset-inline-start:-29px;top:46px;bottom:-16px;width:2px;background:var(--line)}
+.stage h3{margin:0 0 4px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.cols h4{margin-top:.4em}
+ul.did li::marker{content:"✓  ";color:var(--ok)}
+ul.todo li::marker{content:"○  ";color:var(--muted)}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.chain span{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 10px}
+.chain i{font-style:normal;color:var(--muted)}
+.small{font-size:.88rem;color:var(--muted)}
+dl.gloss{margin:0}
+dl.gloss dt{font-weight:700;margin-top:14px}
+dl.gloss dt small{font-weight:400;color:var(--muted);direction:ltr;unicode-bidi:isolate}
+dl.gloss dd{margin:2px 0 0;margin-inline-start:0;padding-inline-start:14px;border-inline-start:2px solid var(--line)}
+.gloss-group{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:6px 18px 14px;margin:14px 0}
+.gloss-group h3{margin-top:.8em}
+footer{margin-top:48px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">למידת מכונה · פרויקט חלק א' · קבוצה 58</div>
+  <h1>סקירת הפרויקט: חיזוי RainTomorrow</h1>
+  <p class="lead">מסמך אחד שמסביר מה הפרויקט, מה כבר עשינו (עם המספרים האמיתיים מהנתונים שלנו), מה נשאר לעשות ואיך, וכל המושגים שצריך להכיר בדרך. בסוף יש הסבר מפורט, שלב אחרי שלב, על מה שכבר עשינו. מצב נכון ל-15 בנובמבר 2026.</p>
+</header>
+
+<nav class="toc" aria-label="תוכן עניינים">
+  <strong>תוכן עניינים</strong>
+  <ol>
+    <li><a href="#goal">מה המטרה של הפרויקט</a></li>
+    <li><a href="#status">איפה אנחנו עומדים</a></li>
+    <li><a href="#files">מבנה התיקייה והקבצים</a></li>
+    <li><a href="#pipeline">השלבים אחד-אחד: מה עשינו ומה נשאר</a></li>
+    <li><a href="#data">הנתונים: מקור ומילון משתנים</a></li>
+    <li><a href="#findings">ממצאים שכבר יש לנו</a></li>
+    <li><a href="#decisions">החלטות שקיבלנו ולמה</a></li>
+    <li><a href="#questions">שאלות פתוחות למתרגל</a></li>
+    <li><a href="#glossary">מילון מושגים</a></li>
+    <li><a href="#report">איך לכתוב את הדו"ח</a></li>
+    <li><a href="#submit">רשימת בדיקה להגשה</a></li>
+    <li><a href="#run">איך מריצים הכל</a></li>
+    <li><a href="#explain-target">הסבר מפורט: משתנה המטרה</a></li>
+    <li><a href="#explain-eda">הסבר מפורט: הבנת הנתונים (סעיף 3)</a></li>
+    <li><a href="#model-input">איך המודל יחזה ומה נכניס אליו</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="goal">1. מה המטרה של הפרויקט</h2>
+<p>אנחנו בונים מערכת שמקבלת את נתוני מזג האוויר של יום אחד בעיר אחת, ומנבאת <strong>האם מחר ירדו לפחות 1.0 מ"מ משקעים</strong> באותה עיר. זו בעיית <a href="#g-classification">סיווג בינארי</a> ב<a href="#g-supervised">למידה מונחית</a>: לכל יום יש תשובה ידועה (ירד / לא ירד), והמודל לומד מהדוגמאות.</p>
+<div class="chain">
+  <span>Open-Meteo API</span><i>←</i><span>102 קובצי JSON גולמיים</span><i>←</i><span>sensed_data.csv</span><i>←</i><span>משתנה מטרה</span><i>←</i><span>EDA + איכות</span><i>←</i><span>הכנת נתונים</span><i>←</i><span>final_dataset.csv</span><i>←</i><span class="tag">חלק ב': מודלים</span>
+</div>
+<div class="cols">
+  <div class="card"><h4 style="margin-top:0">חלק א' (עכשיו)</h4>איסוף הנתונים, בניית ה-dataset, הבנת הנתונים, בדיקת איכות והכנה למודל. <strong>אין אימון מודלים</strong> בחלק הזה.</div>
+  <div class="card"><h4 style="margin-top:0">חלק ב' (בהמשך)</h4>אימון והשוואה של מודלים. הבחינה הסופית תהיה על נתונים <strong>מהעתיד</strong>, שיגיעו כקובצי JSON גולמיים ויעברו דרך הקוד שלנו. לכן כל העיבוד צריך לעבוד גם על JSON חדש.</div>
+</div>
+<div class="box why"><b class="t">איפה הנקודות</b>65 מתוך 100 נקודות הן על הבנת הנתונים (35) והכנת הנתונים (30). הקוד הוא רק כלי. הציון ניתן על ההסבר: <em>למה</em> עשינו משהו, <em>מה</em> יצא, ו<em>מה</em> זה אומר להמשך.</div>
+
+<!-- ============================================================ -->
+<h2 id="status">2. איפה אנחנו עומדים</h2>
+<div class="kpis">
+  <div class="kpi"><div class="v">5 / 10</div><div class="l">שלבים הושלמו (0–3 ו-5)</div></div>
+  <div class="kpi"><div class="v">~40 / 100</div><div class="l">הערכה: איסוף וחישה (20) ורוב ה-EDA, לפני בדיקה ודוח</div></div>
+  <div class="kpi"><div class="v">36,924</div><div class="l">שורות ב-final_dataset.csv</div></div>
+  <div class="kpi"><div class="v">36.2%</div><div class="l">ימים שאחריהם יום גשום</div></div>
+</div>
+<p class="small">התקדמות לפי משקל הנקודות:</p>
+<div class="bar" role="img" aria-label="כ-40 נקודות מוכנות מתוך 100">
+  <span style="width:40%;background:var(--ok)"></span>
+</div>
+
+<div class="tbl"><table>
+<thead><tr><th>#</th><th>שלב</th><th>קובץ</th><th>ניקוד</th><th>מצב</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>סביבת עבודה</td><td><code>.venv</code>, <code>requirements.txt</code>, <code>README.md</code></td><td>שחזוריות</td><td><span class="st done">הושלם</span></td></tr>
+<tr><td>1</td><td>איסוף נתונים</td><td><code>data_collection.py</code></td><td rowspan="2">20</td><td><span class="st done">הושלם</span></td></tr>
+<tr><td>2</td><td>חישה (Sensing)</td><td><code>sensing.py</code></td><td><span class="st done">הושלם</span></td></tr>
+<tr><td>3</td><td>משתנה המטרה</td><td>מחברת, סעיפים 1–2</td><td>חלק מ-35</td><td><span class="st done">הושלם</span> <span class="small">(חסרות כמה שורות הסבר)</span></td></tr>
+<tr><td>4</td><td>הגדרת הבעיה</td><td>דוח</td><td>5</td><td><span class="st todo">לא התחיל</span></td></tr>
+<tr><td>5</td><td>הבנת הנתונים (EDA)</td><td>מחברת, סעיף 3</td><td>35</td><td><span class="st done">הקוד גמור</span> <span class="small">(נשארו בדיקה והבנה)</span></td></tr>
+<tr><td>6</td><td>איכות נתונים</td><td>מחברת, סעיף 4</td><td>(בתוך ה-35)</td><td><span class="st todo">לא התחיל</span></td></tr>
+<tr><td>7</td><td>הכנת נתונים</td><td>מחברת, סעיף 5</td><td>30</td><td><span class="st todo">לא התחיל</span></td></tr>
+<tr><td>8</td><td>דוח PDF</td><td>-</td><td>10</td><td><span class="st todo">לא התחיל</span></td></tr>
+<tr><td>9</td><td>שחזוריות + ZIP</td><td><code>Group_58.zip</code></td><td>הורדת נקודות אם חסר</td><td><span class="st todo">לא התחיל</span></td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="files">3. מבנה התיקייה והקבצים</h2>
+<pre><code>ml_project/
+├── data/
+│   ├── raw/
+│   │   ├── london_2010.json ... vancouver_2026.json   # 102 קבצים, בדיוק כפי שהגיעו מה-API
+│   │   └── sensed_data.csv          # הפלט של sensing.py
+│   └── processed/
+│       └── final_dataset.csv        # הפלט של המחברת
+├── data_collection.py               # הקובץ היחיד שפונה ל-API
+├── sensing.py                       # JSON → טבלה אחת. לא פונה ל-API
+├── dataset_creation.ipynb           # מטרה, EDA, איכות, הכנה
+├── requirements.txt
+├── README.md                        # השורה הראשונה: Group: 58
+├── HANDOFF.md                       # סיכום מצב באנגלית
+├── project_guide.html               # מדריך המושגים הקודם
+└── project_overview.html            # המסמך הזה</code></pre>
+<p class="small">בקובץ ה-ZIP לא נכללים <code>.venv</code>, <code>desktop.ini</code>, <code>.ipynb_checkpoints</code> ו-<code>__pycache__</code>.</p>
+
+<!-- ============================================================ -->
+<h2 id="pipeline">4. השלבים אחד-אחד: מה עשינו ומה נשאר</h2>
+
+<ol class="pipe">
+
+<li class="stage is-done" data-n="0">
+  <h3>הקמת סביבת עבודה <span class="st done">הושלם</span></h3>
+  <p>יצרנו <a href="#g-venv">סביבה וירטואלית</a> (<code>.venv</code>), רשמנו את הספריות ב-<code>requirements.txt</code>, ובקובץ <code>README.md</code> השורה הראשונה היא <code>Group: 58</code>, כפי שההנחיות דורשות.</p>
+  <div class="box warn"><b class="t">לזכור</b>לא מעתיקים את <code>.venv</code> בין מחשבים. במחשב חדש בונים אותה מחדש מ-<code>requirements.txt</code>.</div>
+</li>
+
+<li class="stage is-done" data-n="1">
+  <h3>איסוף נתונים: <code>data_collection.py</code> <span class="st done">הושלם</span></h3>
+  <div class="meta"><span class="tag">חלק מ-20 נק'</span></div>
+  <p>הסקריפט מוריד נתוני מזג אוויר יומיים מ-<a href="#g-api">API</a> של Open-Meteo, עבור 6 ערים, מ-2010-01-01 עד 2026-11-07.</p>
+  <ul class="did">
+    <li><strong>בקשה לכל עיר × שנה:</strong> 6 ערים × 17 שנים = 102 בקשות, וכל תשובה נשמרת כ-<code>&lt;city&gt;_&lt;year&gt;.json</code>.</li>
+    <li><strong><a href="#g-ratelimit">Rate limiting</a>:</strong> מחלקה <code>RateLimiter</code> סופרת כל בקשה (גם ניסיונות שנכשלו) בחלון של שעה ובחלון של 24 שעות, וממתינה לפני שעוברים 5,000 לשעה או 10,000 ליממה.</li>
+    <li><strong><a href="#g-backoff">Retry עם backoff</a>:</strong> על שגיאה 429, שגיאת שרת 5xx או שגיאת רשת, ממתינים 2, 4, 8, 16, 32 שניות ומנסים שוב, עד 5 ניסיונות.</li>
+    <li><strong>שגיאה 400:</strong> הבקשה עצמה שגויה, ולכן אין טעם לנסות שוב. הסקריפט עוצר ומדפיס את הסיבה שהשרת החזיר.</li>
+    <li><strong><a href="#g-cache">Cache</a>:</strong> אם קובץ כבר קיים מדלגים עליו. הרצה חוזרת מורידה רק מה שחסר.</li>
+    <li><strong>נתונים גולמיים:</strong> התשובה נשמרת כמו שהיא, בלי עיבוד.</li>
+    <li><strong>אימות:</strong> כל 102 הקבצים שלמים ואין בהם ערכים חסרים.</li>
+  </ul>
+</li>
+
+<li class="stage is-done" data-n="2">
+  <h3>חישה (Sensing): <code>sensing.py</code> <span class="st done">הושלם</span></h3>
+  <div class="meta"><span class="tag">חלק מ-20 נק'</span></div>
+  <p>הסקריפט קורא את כל קובצי ה-JSON מהדיסק (<strong>בלי</strong> לפנות ל-API) ומאחד אותם לטבלה אחת.</p>
+  <ul class="did">
+    <li>לכל קובץ: לוקחים את הבלוק <code>daily</code>, הופכים אותו לטבלה (שורה = יום), משנים את שם העמודה <code>time</code> ל-<code>date</code>.</li>
+    <li>שם העיר נלקח משם הקובץ, כי ה-API מחזיר רק קואורדינטות. מפצלים לפי הקו התחתון <em>האחרון</em>, כדי ש-<code>new_york_2015</code> ייתן <code>new_york</code>.</li>
+    <li>בודקים שכל 10 המשתנים קיימים בכל קובץ, ואם לא, עוצרים עם הודעה.</li>
+    <li>מאחדים, מסירים <a href="#g-duplicates">כפילויות</a> לפי <code>location + date</code>, ממיינים ושומרים ל-<code>data/raw/sensed_data.csv</code>.</li>
+    <li><strong>תוצאה:</strong> 36,930 שורות × 12 עמודות, 0 כפילויות, 0 ימים חסרים. כלומר 6 ערים × 6,155 ימים.</li>
+  </ul>
+</li>
+
+<li class="stage is-done" data-n="3">
+  <h3>יצירת משתנה המטרה (מחברת, סעיפים 1–2) <span class="st done">הושלם</span></h3>
+  <p><code>RainTomorrow = 1</code> אם <code>precipitation_sum</code> של <strong>היום הבא באותה עיר</strong> ≥ 1.0 מ"מ, אחרת 0.</p>
+<pre><code>df = df.sort_values(["location", "date"])
+next_day_precip = df.groupby("location")["precipitation_sum"].shift(-1)
+df["RainTomorrow"] = (next_day_precip &gt;= 1.0).astype(int)
+df = df.loc[next_day_precip.notna()]     # מוחקים את היום האחרון בכל עיר</code></pre>
+  <ul class="did">
+    <li>ממיינים לפי עיר ותאריך, ובודקים שאין "חורים": ההפרש בין כל יום ליום שלפניו הוא בדיוק יום אחד. בלי הבדיקה הזו, "השורה הבאה" לא בהכרח מחר.</li>
+    <li>ה-<code>shift(-1)</code> נעשה <strong>בתוך כל עיר</strong> (<code>groupby</code>). אחרת היום האחרון של ברלין היה מקבל את הגשם של לונדון.</li>
+    <li>היום האחרון של כל עיר (2026-11-07) נמחק כי אין לו מחר: 36,930 − 6 = 36,924 שורות.</li>
+    <li>הגשם של מחר משמש <strong>רק</strong> לבניית המטרה ולא נשמר כמאפיין. אחרת זו <a href="#g-leakage">דליפת מידע</a>.</li>
+    <li>חישבנו את <a href="#g-prior">ההסתברות האפריורית</a>: 36.2% גשם, 63.8% יבש, וציירנו גרף לפי עיר.</li>
+  </ul>
+  <ul class="todo">
+    <li>להשלים את ה-TODO במחברת: כמה משפטים על האקלים של כל עיר (למה ונקובר הכי גשומה וסידני הכי יבשה).</li>
+  </ul>
+</li>
+
+<li class="stage" data-n="4">
+  <h3>הגדרת הבעיה (טקסט לדוח) <span class="st todo">לא התחיל</span></h3>
+  <div class="meta"><span class="tag">5 נק'</span><span class="tag">חצי עמוד עד עמוד</span></div>
+  <ul class="todo">
+    <li><strong>רקע:</strong> למה חיזוי גשם חשוב: חקלאות, תחבורה, אירועים, ניהול מים, תכנון יומיומי.</li>
+    <li><strong>מחקרים קודמים:</strong> מודלים נומריים של חיזוי מזג אוויר (<a href="#g-nwp">NWP</a>), ועבודות ML על ה-dataset "Rain in Australia" מ-Kaggle, שמגדיר בעיה כמעט זהה.</li>
+    <li><strong>שאלת המחקר במשפט אחד</strong>, ומה אנחנו מצפים ש-ML ישיג מעבר ל-baseline של 63.8%.</li>
+  </ul>
+</li>
+
+<li class="stage is-done" data-n="5">
+  <h3>הבנת הנתונים: EDA (מחברת, סעיף 3) <span class="st done">הקוד גמור</span></h3>
+  <div class="meta"><span class="tag">35 נק'</span><span class="tag">החלק הכי כבד</span></div>
+  <p><a href="#g-eda">EDA</a> הוא שלב שבו מסתכלים על הנתונים לפני כל מודל: איך כל משתנה מתפלג, איך המשתנים קשורים זה לזה, ומה מהם קשור למטרה. הסבר מפורט על כל תת-סעיף נמצא ב<a href="#explain-eda">סעיף 14</a>.</p>
+  <ul class="did">
+    <li>נכתבו תתי-סעיפים 3.1–3.7 במחברת, עם 9 גרפים והסבר אחרי כל אחד. המחברת רצה מתחילתה ועד סופה.</li>
+    <li>עמודות העזר לגרפים נמצאות בעותק נפרד בשם <code>eda</code>, כך ש-<code>df</code> ו-<code>final_dataset.csv</code> לא השתנו.</li>
+  </ul>
+  <ul class="todo">
+    <li>לעבור על הקוד ועל הגרפים עד שכל שורה ברורה.</li>
+    <li>לאמת במקור חיצוני את ההסבר לכך שבוונקובר דווקא רוח מזרחית מביאה גשם.</li>
+    <li>לבחור 4–5 גרפים לדוח.</li>
+    <li>אופציונלי, לבונוס: להוסיף קשר נוסף, למשל ההפרש בין הטמפרטורה המורגשת לטמפרטורה בפועל.</li>
+  </ul>
+  <p class="small">זו הייתה רשימת הדרישות לסעיף, וכולן בוצעו:</p>
+  <ul class="did">
+    <li><strong>מילון משתנים:</strong> טבלה עם משמעות, יחידות ו<a href="#g-vartypes">סוג</a> לכל משתנה (יש כבר טיוטה ב<a href="#data">סעיף 5</a> כאן).</li>
+    <li><strong>התפלגויות:</strong> גרף <a href="#g-kde">KDE</a> ל-3 משתנים רציפים לפחות (טמפרטורה, משקעים, רוח), וגרף עמודות ל-2 משתנים קטגוריאליים לפחות (<code>location</code>, <code>weather_code</code> אחרי קיבוץ).</li>
+    <li><strong><a href="#g-conditional">התפלגויות מותנות</a>:</strong> אותו גרף בנפרד ל-<code>RainTomorrow=0</code> ול-<code>=1</code>. אם העקומות שונות, המשתנה כנראה עוזר לחזות.</li>
+    <li><strong><a href="#g-correlation">מפת מתאמים</a> Spearman</strong>. צפוי: ארבעת משתני הטמפרטורה עם מתאם 0.9 ומעלה, ו-<code>precipitation_sum</code> כמעט זהה ל-<code>rain_sum</code>.</li>
+    <li><strong>האם ה-dataset <a href="#g-balance">מאוזן</a> ו<a href="#g-representative">מייצג</a></strong>?</li>
+    <li><strong>לפחות 3 קשרים "מעניינים"</strong>, הרעיונות:
+      <ul>
+        <li>התמדה: P(גשם מחר | גשם היום) לעומת P(גשם מחר | יבש היום).</li>
+        <li>כיוון רוח ← גשם, לכל עיר בנפרד, ב<a href="#g-polar">גרף קוטבי</a> (בלונדון רוח מערבית מהאטלנטי מביאה גשם).</li>
+        <li>עונה × עיר: שיעור הגשם לפי חודש. בסידני העונות הפוכות.</li>
+        <li>הפרש טמפרטורות (max − min) מול גשם: בימים מעוננים ההפרש קטן.</li>
+      </ul>
+    </li>
+    <li><strong>אילו משתנים צפויים להשפיע ואילו אפשר להסיר</strong>, ולבדוק כל השערה בגרף או במספר.</li>
+  </ul>
+</li>
+
+<li class="stage" data-n="6">
+  <h3>איכות נתונים (מחברת, סעיף 4) <span class="st todo">לא התחיל</span></h3>
+  <div class="meta"><span class="tag">חלק מ-35 נק'</span></div>
+  <p>כבר ידוע: אין <a href="#g-missing">ערכים חסרים</a>, אין כפילויות ואין ימים חסרים. ההסבר: הנתונים הם <a href="#g-reanalysis">reanalysis</a> (פלט של מודל), לא מדידות מתחנה.</p>
+  <ul class="todo">
+    <li><strong><a href="#g-sanity">בדיקות היגיון</a>:</strong>
+      <ul>
+        <li>טמפרטורת מינימום גבוהה מהמקסימום</li>
+        <li>ממוצע מחוץ לטווח min–max</li>
+        <li>משקעים שליליים</li>
+        <li>גשם גדול מסך המשקעים</li>
+        <li><code>precipitation_hours</code> מחוץ ל-0..24</li>
+        <li>משקעים &gt; 0 עם 0 שעות משקעים (או להפך)</li>
+        <li>כיוון רוח מחוץ ל-0..360</li>
+        <li><code>weather_code</code> של גשם עם 0 משקעים</li>
+      </ul>
+    </li>
+    <li><strong><a href="#g-outlier">חריגים</a>:</strong> למצוא את היום עם 183.6 מ"מ (איזו עיר ומתי) ולבדוק אם זה אירוע אמיתי, למשל טייפון בטוקיו.</li>
+    <li>להסביר בטקסט למה כמעט אין בעיות איכות, ומה החסרונות של reanalysis (נתונים "חלקים", עלולים לפספס גשם מקומי).</li>
+  </ul>
+  <div class="box ok"><b class="t">גם "הכל תקין" זו תוצאה</b>כותבים: "בדקנו X, Y, Z ולא נמצאו חריגות, כנראה כי מקור הנתונים הוא מודל ולא חיישן". ההנחיות מאפשרות להסביר למה שאלה מסוימת לא רלוונטית.</div>
+</li>
+
+<li class="stage" data-n="7">
+  <h3>הכנת הנתונים (מחברת, סעיף 5) <span class="st todo">לא התחיל</span></h3>
+  <div class="meta"><span class="tag">30 נק'</span></div>
+  <ul class="todo">
+    <li><strong><a href="#g-selection">בחירת מאפיינים</a>:</strong> להסיר משתנים כפולים עם נימוק. למשל: להשאיר טמפרטורה אחת + <code>temp_range</code>, להשאיר <code>precipitation_sum</code> ולגזור דגל שלג מ-<code>precipitation_sum − rain_sum</code>.</li>
+    <li><strong>קיבוץ <code>weather_code</code></strong> לכ-7 קבוצות: בהיר / מעונן / ערפל / טפטוף / גשם / שלג / (סופת רעמים, שבפועל לא מופיעה אצלנו).</li>
+    <li><strong><a href="#g-discretization">דיסקרטיזציה</a></strong> של משתנה רציף אחד לפחות, לפי ספים עם משמעות. למשל משקעים: 0 / &lt;1 / 1–10 / &gt;10 מ"מ, או רוח לפי סולם בופור.</li>
+    <li><strong><a href="#g-fe">מאפיינים חדשים</a>:</strong>
+      <div class="tbl"><table>
+      <thead><tr><th>מאפיין</th><th>חישוב</th><th>למה</th></tr></thead>
+      <tbody>
+      <tr><td><code>rain_today</code></td><td><code>precipitation_sum &gt;= 1.0</code></td><td>מזג אוויר נוטה להימשך</td></tr>
+      <tr><td><code>temp_range</code></td><td><code>max − min</code></td><td>עננות מקטינה את ההפרש היומי</td></tr>
+      <tr><td><code>month_sin</code>, <code>month_cos</code></td><td><code>sin(2π·month/12)</code></td><td><a href="#g-cyclic">קידוד מעגלי</a>: דצמבר קרוב לינואר</td></tr>
+      <tr><td><code>season</code></td><td>לפי חודש <strong>וחצי הכדור</strong></td><td>ינואר הוא קיץ בסידני</td></tr>
+      <tr><td><code>wind_u</code>, <code>wind_v</code></td><td><code>speed·sin(dir)</code>, <code>speed·cos(dir)</code></td><td>פותר את המעגליות של כיוון הרוח</td></tr>
+      <tr><td><code>location</code></td><td><a href="#g-onehot">One-Hot</a></td><td>עמודת 0/1 לכל עיר, בלי סדר מלאכותי</td></tr>
+      <tr><td>lag / rolling</td><td>גשם אתמול, ממוצע 3 ימים</td><td><strong>רק אם המתרגל יאשר</strong> (ראו <a href="#questions">שאלה 2</a>)</td></tr>
+      </tbody></table></div>
+    </li>
+    <li><strong>פונקציה אחת לכל העיבוד</strong>, שעובדת גם על הטבלה שלנו וגם על JSON גולמי חדש. זה מה שיאפשר להריץ את סט המבחן בחלק ב'.</li>
+    <li>בסוף (סעיף 6): לשמור את הטבלה המוכנה ל-<code>final_dataset.csv</code>.</li>
+  </ul>
+</li>
+
+<li class="stage" data-n="8">
+  <h3>כתיבת הדוח (PDF) <span class="st todo">לא התחיל</span></h3>
+  <div class="meta"><span class="tag">10 נק'</span></div>
+  <ul class="todo">
+    <li>בעברית, עד 10 עמודים, Arial 12, רווח שורה וחצי.</li>
+    <li>עמוד שער: מספר קבוצה ומספרי תעודת זהות בלבד, <strong>בלי שמות</strong>.</li>
+    <li>לכל גרף: כותרת, שמות צירים עם יחידות, ומשפט "מה למדנו". פירוט ב<a href="#report">סעיף 10</a>.</li>
+  </ul>
+</li>
+
+<li class="stage" data-n="9">
+  <h3>בדיקת שחזוריות והגשה <span class="st todo">לא התחיל</span></h3>
+  <ul class="todo">
+    <li>לעדכן את <code>requirements.txt</code> עם <code>pip freeze</code>.</li>
+    <li>להריץ את המחברת מההתחלה (Kernel → Restart &amp; Run All) ולשמור אותה עם כל הפלטים.</li>
+    <li>לבדוק בסביבה נקייה שהכל רץ מאפס.</li>
+    <li>לארוז ל-<code>Group_58.zip</code>. רשימה מלאה ב<a href="#submit">סעיף 11</a>.</li>
+  </ul>
+</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="data">5. הנתונים: מקור ומילון משתנים</h2>
+<h3>הערים</h3>
+<div class="tbl"><table>
+<thead><tr><th>עיר</th><th>קואורדינטות</th><th>חצי כדור</th><th>שיעור ימים גשומים</th></tr></thead>
+<tbody>
+<tr><td>Vancouver</td><td dir="ltr">49.28, −123.12</td><td>צפוני</td><td>45.2%</td></tr>
+<tr><td>Tokyo</td><td dir="ltr">35.68, 139.65</td><td>צפוני</td><td>36.6%</td></tr>
+<tr><td>London</td><td dir="ltr">51.51, −0.13</td><td>צפוני</td><td>35.9%</td></tr>
+<tr><td>New York</td><td dir="ltr">40.71, −74.01</td><td>צפוני</td><td>33.8%</td></tr>
+<tr><td>Berlin</td><td dir="ltr">52.52, 13.41</td><td>צפוני</td><td>33.6%</td></tr>
+<tr><td>Sydney</td><td dir="ltr">−33.87, 151.21</td><td><strong>דרומי</strong></td><td>32.2%</td></tr>
+</tbody></table></div>
+
+<h3>מילון המשתנים</h3>
+<div class="tbl"><table>
+<thead><tr><th>משתנה</th><th>משמעות</th><th>יחידות</th><th>סוג</th></tr></thead>
+<tbody>
+<tr><td><code>location</code></td><td>העיר</td><td>-</td><td>קטגוריאלי נומינלי</td></tr>
+<tr><td><code>date</code></td><td>התאריך</td><td>ISO</td><td>זמן. גוזרים ממנו חודש ועונה, לא משתמשים בו ישירות</td></tr>
+<tr><td><code>weather_code</code></td><td>קוד WMO למזג האוויר הדומיננטי ביום (0 בהיר, 3 מעונן, 61 גשם קל...)</td><td>WMO</td><td>קטגוריאלי. נראה כמו מספר, אבל ממוצע של קודים חסר משמעות</td></tr>
+<tr><td><code>temperature_2m_max</code></td><td>טמפרטורה מקסימלית בגובה 2 מ'</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>temperature_2m_min</code></td><td>טמפרטורה מינימלית</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>temperature_2m_mean</code></td><td>טמפרטורה ממוצעת</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>apparent_temperature_mean</code></td><td>טמפרטורה מורגשת (מושפעת מלחות ורוח)</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>precipitation_sum</code></td><td>סך המשקעים (גשם + שלג)</td><td>מ"מ</td><td>רציף, ≥ 0, הרבה אפסים</td></tr>
+<tr><td><code>rain_sum</code></td><td>גשם בלבד</td><td>מ"מ</td><td>רציף, ≥ 0</td></tr>
+<tr><td><code>precipitation_hours</code></td><td>מספר שעות ביום עם משקעים</td><td>שעות</td><td>בדיד, 0 עד 24</td></tr>
+<tr><td><code>wind_speed_10m_max</code></td><td>מהירות רוח מקסימלית בגובה 10 מ'</td><td>קמ"ש</td><td>רציף</td></tr>
+<tr><td><code>wind_direction_10m_dominant</code></td><td>כיוון הרוח הדומיננטי</td><td>מעלות</td><td>רציף <strong>מעגלי</strong></td></tr>
+<tr><td><code>RainTomorrow</code></td><td>משתנה המטרה</td><td>0/1</td><td>בינארי</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="findings">6. ממצאים שכבר יש לנו</h2>
+<div class="tbl"><table>
+<thead><tr><th>ממצא</th><th>מה זה אומר</th><th>איפה זה ייכנס לדוח</th></tr></thead>
+<tbody>
+<tr><td>אין ערכים חסרים, אין כפילויות, אין ימים חסרים</td><td>צפוי, כי זה reanalysis (ERA5) ולא תחנה</td><td>איכות נתונים</td></tr>
+<tr><td>36.2% גשם / 63.8% יבש</td><td>חוסר איזון מתון (בערך 1:2). מודל שתמיד אומר "יבש" מקבל 63.8% דיוק, וזה ה-<a href="#g-baseline">baseline</a></td><td>EDA, ומבט לחלק ב'</td></tr>
+<tr><td>ונקובר 45.2%, סידני 32.2%</td><td>הבדלים אמיתיים בין אקלימים, ולכן העיר היא מאפיין חשוב</td><td>EDA</td></tr>
+<tr><td>הערך המקסימלי של <code>weather_code</code> הוא 75</td><td>אין קודים של ממטרים (80–82) או סופות רעמים (95–99) ברזולוציה יומית</td><td>EDA + קיבוץ הקודים</td></tr>
+<tr><td><code>precipitation_sum</code> ≠ <code>rain_sum</code> בימי שלג</td><td>למשל ברלין 2010-01-01: 3.2 מ"מ משקעים, 0 גשם, קוד 73 (שלג). ההפרש = שלג</td><td>הכנה: דגל שלג</td></tr>
+<tr><td>יום אחד עם 183.6 מ"מ</td><td>ניו יורק, 2022-10-04. ארבעת הימים הבאים אחריו בכמות הגשם הם בטוקיו ובסידני, ואחד מהם הוא טייפון Hagibis (טוקיו, 2019-10-12). את המקרה של ניו יורק עוד צריך לבדוק</td><td>איכות נתונים / חריגים</td></tr>
+<tr><td>אחרי יום גשום: 55.7% גשם מחר. אחרי יום יבש: 25.2%</td><td>מזג האוויר "נמשך". הכי חזק בוונקובר (70%) והכי חלש בניו יורק (45%)</td><td>EDA ← המאפיין <code>rain_today</code></td></tr>
+<tr><td>לכל עיר יש עונה גשומה אחרת</td><td>ונקובר גשומה בחורף (64% בדצמבר), טוקיו בקיץ, סידני בפברואר–מרץ</td><td>EDA ← חודש יחד עם עיר, ועונה לפי חצי כדור</td></tr>
+<tr><td>כל עיר מקבלת גשם מכיוון רוח אחר</td><td>לונדון וברלין: דרום-מערב. ניו יורק: מזרח. ונקובר: דווקא מזרח (72%), ומערב רק 22%</td><td>EDA ← קידוד מעגלי של הרוח יחד עם העיר</td></tr>
+<tr><td>ההסתברות לגשם מחר עולה עם חומרת <code>weather_code</code></td><td>מ-5% אחרי יום בהיר עד 50–62% אחרי גשם או שלג בינוני-כבד</td><td>EDA ← קיבוץ הקודים לפי סוג ועוצמה</td></tr>
+<tr><td>ארבעת משתני הטמפרטורה כמעט זהים (0.92–0.99)</td><td>זה אותו מידע ארבע פעמים</td><td>הכנה: להשאיר טמפרטורה אחת ולהוסיף <code>temp_range</code></td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="decisions">7. החלטות שקיבלנו ולמה</h2>
+<p>את כל אלה צריך לנמק בדוח.</p>
+<div class="tbl"><table>
+<thead><tr><th>החלטה</th><th>נימוק</th></tr></thead>
+<tbody>
+<tr><td>טווח 2010-01-01 עד 2026-11-07</td><td>הרבה שנים ועונות. הבחינה בחלק ב' תהיה על נתונים מהעתיד, אז רוצים כמה שיותר גיוון. עצרנו שבוע לפני היום כי לארכיון יש עיכוב של כמה ימים.</td></tr>
+<tr><td>בקשה אחת לכל עיר × שנה</td><td>קבצים קטנים, קל לבדוק אותם, ואם אחד נכשל מורידים רק אותו.</td></tr>
+<tr><td>רק 10 המשתנים הנדרשים</td><td>זה מה שההנחיות מבקשות. מספיק לבעיה ושומר על פשטות.</td></tr>
+<tr><td>כל בקשה נספרת, גם כשנכשלה</td><td>השרת סופר כל בקשה שמגיעה אליו.</td></tr>
+<tr><td>על 400 עוצרים, על 429/5xx מנסים שוב</td><td>400 אומר שהבקשה שגויה וניסיון חוזר לא יעזור. 429/5xx הן בעיות זמניות.</td></tr>
+<tr><td>RainTomorrow נוצר במחברת ולא ב-<code>sensing.py</code></td><td>בנספח כתוב שהמחברת כוללת "יצירת משתנה המטרה". עדיין שווה לשאול את המתרגל.</td></tr>
+<tr><td>היום האחרון בכל עיר נמחק</td><td>אין לו "מחר", ולכן אין לו ערך מטרה.</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="questions">8. שאלות פתוחות למתרגל</h2>
+<div class="card">
+  <ol>
+    <li><strong>האם RainTomorrow צריך להיווצר ב-<code>sensing.py</code> או במחברת?</strong> כרגע הוא במחברת.</li>
+    <li><strong>בחלק ב', כמה ימים יש בכל קובץ JSON של סט המבחן?</strong> יום אחד או רצף ימים? אם יש רק יום אחד, אין "אתמול", ואי אפשר להשתמש במאפייני lag (גשם אתמול, ממוצע 3 ימים). התשובה משפיעה על שלב 7.</li>
+  </ol>
+  <p class="small">אף שאלה לא חוסמת את ה-EDA. אפשר להמשיך לעבוד במקביל.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="glossary">9. מילון מושגים</h2>
+<p>כל המושגים שמופיעים בפרויקט, לפי נושא. הקישורים בשאר המסמך מובילים לכאן.</p>
+
+<div class="gloss-group">
+<h3>יסודות ML</h3>
+<dl class="gloss">
+  <dt id="g-supervised">למידה מונחית <small>Supervised Learning</small></dt>
+  <dd>לומדים מדוגמאות שיש להן תשובה נכונה ידועה. כל שורה בטבלה היא דוגמה: המאפיינים הם מה שיודעים היום, והמטרה היא מה שרוצים לחזות.</dd>
+  <dt id="g-features">מאפיינים ומשתנה מטרה <small>Features (X), Target (y)</small></dt>
+  <dd>מאפיינים: הקלט למודל (טמפרטורה, רוח, עיר...). משתנה מטרה: מה שהמודל מנסה לחזות, אצלנו <code>RainTomorrow</code>.</dd>
+  <dt id="g-classification">סיווג בינארי <small>Binary Classification</small></dt>
+  <dd>המטרה היא קטגוריה עם שתי אפשרויות בדיוק (1 = גשם מחר, 0 = לא). לעומת <strong>רגרסיה</strong>, שבה חוזים מספר (למשל כמה מ"מ ירדו). הסף של 1.0 מ"מ מסנן טפטוף זניח ומקובל במטאורולוגיה.</dd>
+  <dt id="g-baseline">Baseline</dt>
+  <dd>התוצאה של "מודל" טיפשי, כדי לדעת מה נחשב הצלחה. אצלנו: תמיד לחזות "יבש" נותן 63.8% דיוק. כל מודל בחלק ב' צריך לעבור את זה.</dd>
+  <dt id="g-overfitting">התאמת יתר <small>Overfitting</small></dt>
+  <dd>מודל ש"משנן" את נתוני האימון במקום ללמוד דפוס כללי. עובד מצוין על האימון ונכשל על נתונים חדשים. מאפיינים מיותרים מגדילים את הסיכון.</dd>
+  <dt id="g-leakage">דליפת מידע <small>Data Leakage</small></dt>
+  <dd>כשבזמן האימון המודל רואה מידע שלא יהיה לו בזמן חיזוי אמיתי. התוצאות נראות מעולות והמודל נכשל במציאות. הכלל אצלנו: כל מאפיין חייב להיות ידוע עד סוף היום הנוכחי. הגשם של מחר משמש רק לבניית המטרה.</dd>
+</dl>
+</div>
+
+<div class="gloss-group">
+<h3>איסוף ועיבוד נתונים</h3>
+<dl class="gloss">
+  <dt id="g-api">API</dt>
+  <dd>ממשק שדרכו תוכנה מבקשת נתונים משרת. אנחנו שולחים בקשת HTTP עם פרמטרים (קואורדינטות, תאריכים, משתנים) ומקבלים JSON.</dd>
+  <dt id="g-json">JSON</dt>
+  <dd>פורמט טקסט לנתונים מובנים (מילונים ורשימות). ה-API מחזיר JSON, ואנחנו שומרים אותו כמו שהוא.</dd>
+  <dt id="g-http">קודי סטטוס HTTP</dt>
+  <dd><code>200</code> הצלחה. <code>400</code> בקשה שגויה (צריך לתקן אותה). <code>429</code> יותר מדי בקשות (צריך להאט). <code>5xx</code> תקלה בשרת (זמנית).</dd>
+  <dt id="g-ratelimit">הגבלת קצב <small>Rate Limiting</small></dt>
+  <dd>השרת מגביל כמה בקשות מותר לשלוח בפרק זמן (כאן 5,000 לשעה ו-10,000 ליממה). אנחנו סופרים את הבקשות וממתינים לפני שעוברים את הגבול.</dd>
+  <dt id="g-backoff">ניסיון חוזר עם השהיה גדלה <small>Retry with Exponential Backoff</small></dt>
+  <dd>כשבקשה נכשלת בגלל בעיה זמנית, מחכים ומנסים שוב, וכל פעם מחכים פי 2 יותר (2, 4, 8, 16, 32 שניות). כך לא מעמיסים על שרת שכבר בעומס.</dd>
+  <dt id="g-cache">מטמון <small>Cache</small></dt>
+  <dd>שמירת תוצאה כדי לא לבקש אותה שוב. אצלנו: אם הקובץ כבר קיים, לא מורידים אותו מחדש.</dd>
+  <dt id="g-sensing">חישה <small>Sensing</small></dt>
+  <dd>השלב שהופך את הנתונים הגולמיים (102 קבצים) לטבלה אחת אחידה. נעשה רק מקבצים מקומיים.</dd>
+  <dt id="g-duplicates">כפילויות</dt>
+  <dd>אותה עיר באותו תאריך מופיעה פעמיים. מסירים לפי המפתח <code>location + date</code>. אצלנו לא נמצאו.</dd>
+  <dt id="g-venv">סביבה וירטואלית <small>Virtual Environment</small></dt>
+  <dd>תיקייה עם פייתון וספריות נפרדות לפרויקט, כדי שגרסאות הספריות יהיו קבועות ואפשר יהיה לשחזר את הריצה.</dd>
+  <dt id="g-reproducibility">שחזוריות <small>Reproducibility</small></dt>
+  <dd>מישהו אחר מריץ את הקוד שלנו מאפס ומקבל אותן תוצאות. לכן <code>requirements.txt</code>, מחברת שרצה מהתחלה ועד הסוף, ונתיבים יחסיים.</dd>
+</dl>
+</div>
+
+<div class="gloss-group">
+<h3>הנתונים עצמם</h3>
+<dl class="gloss">
+  <dt id="g-reanalysis">Reanalysis (ERA5)</dt>
+  <dd>הנתונים של Open-Meteo הם לא מדידות ישירות מתחנה. הם פלט של מודל פיזיקלי (ERA5 של ECMWF) שמשלב תצפיות מתחנות, לוויינים ובלוני מזג אוויר, ומפיק ערכים על רשת אחידה. לכן אין ערכים חסרים, אבל הנתונים "חלקים" יותר ועלולים לפספס גשם מקומי. הקואורדינטות שחוזרות הן של נקודת הרשת הקרובה.</dd>
+  <dt id="g-wmo">קוד WMO <small>weather_code</small></dt>
+  <dd>קוד בינלאומי למצב מזג האוויר: 0–3 בהיר עד מעונן, 45–48 ערפל, 51–57 טפטוף, 61–67 גשם, 71–77 שלג, 80–82 ממטרים, 95–99 סופות רעמים.</dd>
+  <dt id="g-nwp">חיזוי נומרי <small>NWP</small></dt>
+  <dd>הדרך הקלאסית לחזות מזג אוויר: פתרון משוואות פיזיקה של האטמוספרה במחשבי-על. ML מנסה ללמוד את הדפוסים ישירות מהנתונים.</dd>
+</dl>
+</div>
+
+<div class="gloss-group">
+<h3>הבנת נתונים (EDA)</h3>
+<dl class="gloss">
+  <dt id="g-eda">EDA <small>Exploratory Data Analysis</small></dt>
+  <dd>חקירה של הנתונים לפני כל מודל: גרפים, סטטיסטיקות, חיפוש דפוסים ובעיות. המטרה להבין מה יש לנו ומה כדאי לעשות איתו.</dd>
+  <dt id="g-vartypes">סוגי משתנים</dt>
+  <dd><strong>רציף:</strong> כל ערך בטווח (טמפרטורה). <strong>בדיד:</strong> ספירה (שעות משקעים). <strong>נומינלי:</strong> קטגוריות בלי סדר (עיר). <strong>אורדינלי:</strong> קטגוריות עם סדר (קר / נעים / חם). <strong>מעגלי:</strong> הערך חוזר להתחלה (כיוון רוח, חודש). <strong>בינארי:</strong> 0/1.</dd>
+  <dt id="g-pdf">פונקציית צפיפות <small>PDF</small></dt>
+  <dd>עקומה שמראה איפה הערכים של משתנה רציף מרוכזים. השטח מתחתיה שווה ל-1.</dd>
+  <dt id="g-kde">KDE <small>Kernel Density Estimation</small></dt>
+  <dd>שיטה להעריך את ה-PDF מהנתונים, מעין היסטוגרמה מוחלקת. ב-seaborn: <code>sns.kdeplot</code>.</dd>
+  <dt id="g-skew">הטיה <small>Skewness</small></dt>
+  <dd>התפלגות לא סימטרית. משקעים מוטים ימינה מאוד: רוב הימים 0, ומעט ימים עם הרבה גשם. לפעמים עוזר להפעיל <code>log1p</code>.</dd>
+  <dt id="g-bimodal">דו-שיאי <small>Bimodal</small></dt>
+  <dd>התפלגות עם שני "הרים". טמפרטורה לרוב כזו בגלל קיץ וחורף.</dd>
+  <dt id="g-conditional">התפלגות מותנית</dt>
+  <dd>התפלגות של משתנה בנפרד לכל ערך של המטרה. אם ההתפלגות שונה כש-<code>RainTomorrow=1</code> לעומת <code>=0</code>, המשתנה כנראה שימושי לחיזוי.</dd>
+  <dt id="g-prior">הסתברות אפריורית <small>Prior</small></dt>
+  <dd>ההסתברות של ערך לפני שמסתכלים על מידע נוסף. אצלנו P(RainTomorrow=1) = 0.362.</dd>
+  <dt id="g-balance">איזון מחלקות <small>Class Balance</small></dt>
+  <dd>האם המחלקות בגודל דומה. אצלנו 36:64, חוסר איזון מתון. בחלק ב' זה אומר ש-accuracy לבד לא מספיק, ונצטרך גם precision, recall, F1 או AUC.</dd>
+  <dt id="g-representative">ייצוגיות</dt>
+  <dd>האם הנתונים מתארים נאמנה את העולם שעליו המודל יופעל. נקודות לדיון: רק 6 ערים גדולות, 5 בצפון ואחת בדרום, בלי אקלים מדברי או טרופי, נתוני מודל ולא תחנה, ושינויי אקלים לאורך השנים.</dd>
+  <dt id="g-correlation">מתאם <small>Pearson / Spearman</small></dt>
+  <dd><strong>Pearson</strong> מודד קשר לינארי. <strong>Spearman</strong> מודד קשר מונוטוני לפי דירוג, ולכן עמיד יותר לחריגים ולהתפלגויות מוטות כמו משקעים. שניהם בין −1 ל-1. מתאם הוא לא סיבתיות.</dd>
+  <dt id="g-multicol">מולטיקולינאריות <small>Multicollinearity</small></dt>
+  <dd>כמה מאפיינים שמתארים כמעט אותו דבר (ארבעת משתני הטמפרטורה). מוסיפים מורכבות בלי מידע חדש, ולכן משאירים אחד.</dd>
+  <dt id="g-polar">גרף קוטבי <small>Polar / Wind Rose</small></dt>
+  <dd>גרף עגול שמתאים למשתנים מעגליים. מתאים להציג שיעור גשם לפי כיוון הרוח.</dd>
+</dl>
+</div>
+
+<div class="gloss-group">
+<h3>איכות נתונים</h3>
+<dl class="gloss">
+  <dt id="g-missing">ערכים חסרים <small>MCAR / MAR / MNAR</small></dt>
+  <dd><strong>MCAR:</strong> חסר באקראי לגמרי. <strong>MAR:</strong> החוסר תלוי במשתנים אחרים (למשל רק בעיר מסוימת). <strong>MNAR:</strong> החוסר תלוי בערך עצמו (חיישן שנכשל דווקא בסערה). טיפול אפשרי: השמטה, השלמה בממוצע/חציון, או אינטרפולציה בזמן בתוך אותה עיר. אצלנו אין חסרים.</dd>
+  <dt id="g-sanity">בדיקות היגיון <small>Sanity Checks</small></dt>
+  <dd>בדיקות שהערכים אפשריים פיזיקלית ועקביים זה עם זה (מינימום ≤ מקסימום, גשם ≤ סך משקעים, שעות בין 0 ל-24 וכו').</dd>
+  <dt id="g-outlier">חריג <small>Outlier</small></dt>
+  <dd>ערך רחוק מאוד משאר הערכים. צריך לבדוק אם זו שגיאה (ואז לתקן או להסיר) או אירוע אמיתי ונדיר (ואז להשאיר ולהסביר).</dd>
+</dl>
+</div>
+
+<div class="gloss-group">
+<h3>הכנת נתונים</h3>
+<dl class="gloss">
+  <dt id="g-selection">בחירת מאפיינים <small>Feature Selection</small></dt>
+  <dd>הסרת מאפיינים כפולים, רועשים, כמעט קבועים, או עם קשר חלש למטרה. כל הסרה צריכה נימוק עם גרף או מספר. <strong>Mutual Information</strong> הוא מדד שתופס גם קשרים לא לינאריים בין מאפיין למטרה.</dd>
+  <dt id="g-discretization">דיסקרטיזציה <small>Discretization / Binning</small></dt>
+  <dd>הפיכת משתנה רציף לקטגוריות. <strong>רוחב שווה</strong> (<code>pd.cut</code>), <strong>תדירות שווה</strong> לפי אחוזונים (<code>pd.qcut</code>), או <strong>לפי ידע מהתחום</strong> עם ספים בעלי משמעות. עוזר כשהקשר לא לינארי ומפחית רעש, אבל מאבדים מידע בתוך כל קטגוריה.</dd>
+  <dt id="g-fe">גזירת מאפיינים <small>Feature Engineering</small></dt>
+  <dd>יצירת מאפיינים חדשים מהקיימים בעזרת הבנה של התחום, כמו <code>temp_range</code> או <code>rain_today</code>. לרוב זה השיפור הגדול ביותר שאפשר לעשות.</dd>
+  <dt id="g-cyclic">קידוד מעגלי <small>sin / cos</small></dt>
+  <dd>למשתנה מעגלי (חודש, כיוון רוח) מחשבים sin ו-cos. כך דצמבר (12) וינואר (1) יוצאים קרובים, ו-359° קרוב ל-1°.</dd>
+  <dt id="g-onehot">One-Hot Encoding</dt>
+  <dd>הפיכת משתנה קטגוריאלי לכמה עמודות 0/1, אחת לכל קטגוריה. כך המודל לא "חושב" שיש סדר בין הערים.</dd>
+  <dt id="g-lag">מאפייני עבר <small>Lag / Rolling</small></dt>
+  <dd>ערכים מימים קודמים (גשם אתמול, ממוצע 3 ימים אחרונים). מותרים רק אם החלון כולל את היום ולפניו, ורק אם סט המבחן בחלק ב' יכלול ימים קודמים.</dd>
+</dl>
+</div>
+
+<div class="gloss-group">
+<h3>זמן ומבט לחלק ב'</h3>
+<dl class="gloss">
+  <dt id="g-timeseries">סדרה עתית <small>Time Series</small></dt>
+  <dd>נתונים שמסודרים לפי זמן. ימים סמוכים דומים זה לזה (<strong>autocorrelation</strong>), ולכן הדוגמאות לא בלתי תלויות.</dd>
+  <dt id="g-split">חלוקה לפי זמן</dt>
+  <dd>בחלק ב', חלוקה אקראית לאימון ובדיקה תאפשר למודל "להציץ" בימים צמודים. נכון יותר לאמן על שנים מוקדמות ולבדוק על המאוחרות, כמו בבחינה האמיתית.</dd>
+  <dt id="g-shift">Distribution Shift</dt>
+  <dd>ההתפלגות של הנתונים משתנה עם הזמן (למשל בגלל שינויי אקלים). שווה לבדוק אם שיעור הגשם השתנה לאורך השנים.</dd>
+  <dt id="g-metrics">מדדי הערכה <small>Accuracy, Precision, Recall, F1, AUC</small></dt>
+  <dd><strong>Accuracy:</strong> אחוז החיזויים הנכונים. <strong>Precision:</strong> מתוך הימים שחזינו בהם גשם, בכמה באמת ירד. <strong>Recall:</strong> מתוך הימים שבהם ירד גשם, כמה תפסנו. <strong>F1:</strong> ממוצע הרמוני של השניים. <strong>AUC:</strong> כמה טוב המודל מדרג ימים גשומים מעל יבשים. רלוונטי לחלק ב'.</dd>
+</dl>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="report">10. איך לכתוב את הדוח</h2>
+<p>כל פעולה בדוח עוברת את אותה שרשרת:</p>
+<div class="chain"><span>למה עשינו</span><i>←</i><span>מה התקבל</span><i>←</i><span>מה למדנו</span><i>←</i><span>מה ההשלכה להמשך</span></div>
+<div class="card">
+<strong>דוגמה:</strong> חשדנו ש-<code>rain_sum</code> ו-<code>precipitation_sum</code> מודדים כמעט אותו דבר ← חישבנו מתאם ← המתאם גבוה מאוד, וההבדל מופיע רק בימי שלג ← שני המשתנים מתארים אותה תופעה ← נשאיר את <code>precipitation_sum</code> (ממנו מוגדרת המטרה) ונגזור דגל שלג.
+</div>
+<h3>מבנה מוצע ל-10 עמודים</h3>
+<div class="tbl"><table>
+<thead><tr><th>פרק</th><th>עמודים</th><th>ניקוד</th></tr></thead>
+<tbody>
+<tr><td>עמוד שער (מספר קבוצה + ת"ז, בלי שמות)</td><td>-</td><td>-</td></tr>
+<tr><td>איסוף נתונים וחישה: החלטות, טווח תאריכים, טיפול בשגיאות</td><td>1.5</td><td>20</td></tr>
+<tr><td>הגדרת הבעיה</td><td>0.5–1</td><td>5</td></tr>
+<tr><td>הבנת הנתונים + איכות</td><td>4</td><td>35</td></tr>
+<tr><td>הכנת הנתונים</td><td>3</td><td>30</td></tr>
+<tr><td>סיכום: מה למדנו</td><td>0.5</td><td>-</td></tr>
+</tbody></table></div>
+<h3>גרף טוב</h3>
+<ul>
+  <li>כותרת שאומרת מה רואים, שמות צירים עם יחידות (°C, מ"מ), ומקרא.</li>
+  <li>צבע קבוע לכל עיר לאורך כל הדוח (כבר מוגדר במחברת: <code>CITY_COLORS</code>).</li>
+  <li>גרף בלי משפט הסבר לא שווה נקודות.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="submit">11. רשימת בדיקה להגשה</h2>
+<div class="tbl"><table>
+<thead><tr><th>פריט</th><th>מצב</th></tr></thead>
+<tbody>
+<tr><td><code>README.md</code> שהשורה הראשונה בו <code>Group: 58</code></td><td><span class="st done">יש</span></td></tr>
+<tr><td><code>data_collection.py</code> עם rate limit, retry, טיפול ב-400 ו-cache</td><td><span class="st done">יש</span></td></tr>
+<tr><td><code>sensing.py</code> שלא פונה ל-API</td><td><span class="st done">יש</span></td></tr>
+<tr><td>קובצי JSON גולמיים ב-<code>data/raw/</code></td><td><span class="st done">יש</span></td></tr>
+<tr><td><code>data/raw/sensed_data.csv</code></td><td><span class="st done">יש</span></td></tr>
+<tr><td>מחברת עם כל הסעיפים, רצה מהתחלה עד הסוף, שמורה עם פלטים</td><td><span class="st part">חלקי</span></td></tr>
+<tr><td><code>data/processed/final_dataset.csv</code> אחרי הכנת הנתונים</td><td><span class="st part">יש גרסה בלי הכנה</span></td></tr>
+<tr><td><code>requirements.txt</code> מעודכן</td><td><span class="st part">לעדכן בסוף</span></td></tr>
+<tr><td>דוח PDF בעברית, עד 10 עמודים, Arial 12, רווח 1.5, בלי שמות</td><td><span class="st todo">חסר</span></td></tr>
+<tr><td><code>Group_58.zip</code> בלי <code>.venv</code>, <code>desktop.ini</code>, <code>.ipynb_checkpoints</code>, <code>__pycache__</code></td><td><span class="st todo">חסר</span></td></tr>
+<tr><td>טל יודעת להסביר כל שורת קוד</td><td><span class="st part">להמשיך לעבור על הקוד</span></td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="run">12. איך מריצים הכל</h2>
+<pre><code>python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python data_collection.py      # מדלג על קבצים שכבר קיימים
+python sensing.py
+jupyter notebook dataset_creation.ipynb   # Kernel -&gt; Restart &amp; Run All</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="explain-target">13. הסבר מפורט: משתנה המטרה (מחברת, סעיף 2)</h2>
+<p><strong>מה רצינו להשיג:</strong> בטבלה של <code>sensing.py</code> יש לכל יום רק את מזג האוויר <em>של אותו יום</em>. אין עמודה שאומרת מה קרה <em>למחרת</em>, וזה בדיוק מה שהמודל צריך ללמוד לחזות. התשובה כבר נמצאת בטבלה, בשורה של מחר, וכל מה שצריך זה "להעלות" אותה שורה אחת למעלה.</p>
+<p><strong>ההגדרה מההנחיות:</strong> <code>RainTomorrow = 1</code> אם ביום הבא, באותה עיר, <code>precipitation_sum</code> ≥ 1.0 מ"מ, אחרת 0.</p>
+
+<h3>שלב 1: מיון</h3>
+<pre><code>df = df.sort_values(["location", "date"]).reset_index(drop=True)</code></pre>
+<p>ממיין לפי עיר ואז לפי תאריך: כל ימי ברלין ברצף, אחריהם כל ימי לונדון, וכן הלאה. <code>reset_index</code> רק מספרת מחדש את השורות. <strong>למה:</strong> כל הטריק מבוסס על ההנחה ש"השורה הבאה היא מחר", וזה נכון רק אם השורות מסודרות לפי זמן בתוך כל עיר.</p>
+
+<h3>שלב 2: בדיקה שאין חורים בתאריכים</h3>
+<pre><code>gap_days = df.groupby("location")["date"].diff().dt.days
+gaps = df.loc[gap_days.notna() &amp; (gap_days != 1), ["location", "date"]]
+print("non-consecutive days:", len(gaps))</code></pre>
+<ul>
+  <li><code>groupby("location")</code>: עובדים על כל עיר בנפרד.</li>
+  <li><code>diff()</code>: לכל שורה, כמה זמן עבר מהשורה הקודמת. <code>.dt.days</code> הופך את זה למספר ימים.</li>
+  <li><code>gap_days != 1</code>: שורות שבהן ההפרש אינו יום אחד בדיוק, כלומר יש חור.</li>
+  <li><code>notna()</code>: מדלגים על השורה הראשונה של כל עיר, שאין לפניה כלום ולכן ההפרש שלה ריק (NaN).</li>
+</ul>
+<p><strong>התוצאה:</strong> 0, אין חורים. <strong>למה זה חשוב:</strong> אם היה חסר, למשל, 5 במרץ, "השורה הבאה" אחרי 4 במרץ הייתה 6 במרץ, והמטרה הייתה נקבעת לפי יומיים קדימה. זו טעות שקטה שאף אחד לא היה רואה.</p>
+
+<h3>שלב 3: הליבה, <code>shift(-1)</code></h3>
+<pre><code>next_day_precip = df.groupby("location")["precipitation_sum"].shift(-1)</code></pre>
+<p><code>shift(-1)</code> מזיז את עמודת המשקעים שורה אחת למעלה, כך שבכל שורה מופיעים המשקעים של מחר. דוגמה אמיתית מלונדון:</p>
+<div class="tbl"><table>
+<thead><tr><th>date</th><th>precipitation_sum (היום)</th><th>next_day_precip (מחר)</th></tr></thead>
+<tbody>
+<tr><td>2010-01-03</td><td>0.0</td><td>0.0</td></tr>
+<tr><td>2010-01-04</td><td>0.0</td><td><strong>3.2</strong> ← הערך של 01-05 עלה שורה</td></tr>
+<tr><td>2010-01-05</td><td>3.2</td><td><strong>9.4</strong> ← הערך של 01-06 עלה שורה</td></tr>
+<tr><td>2010-01-06</td><td>9.4</td><td>0.0</td></tr>
+</tbody></table></div>
+<p><strong>למה <code>groupby("location")</code> קריטי:</strong> במעבר בין ברלין ללונדון בטבלה הממוינת:</p>
+<div class="tbl"><table>
+<thead><tr><th>location</th><th>date</th><th>precipitation_sum</th><th>next_day_precip</th></tr></thead>
+<tbody>
+<tr><td>berlin</td><td>2026-11-06</td><td>0.0</td><td>0.0</td></tr>
+<tr><td>berlin</td><td>2026-11-07</td><td>0.0</td><td><strong>NaN</strong></td></tr>
+<tr><td>london</td><td>2010-01-01</td><td>0.0</td><td>0.0</td></tr>
+</tbody></table></div>
+<p>עם <code>groupby</code>, היום האחרון של ברלין מקבל NaN, כלומר "אין מחר", וזה נכון. בלי <code>groupby</code> הוא היה מקבל את הגשם של <strong>לונדון 2010-01-01</strong>, עיר אחרת ו-16 שנה אחורה.</p>
+
+<h3>שלב 4: הפיכה ל-0/1</h3>
+<pre><code>df["RainTomorrow"] = (next_day_precip &gt;= RAIN_THRESHOLD_MM).astype(int)</code></pre>
+<p>לכל שורה בודקים אם המשקעים של מחר הם לפחות 1.0 מ"מ. התוצאה היא True או False, ו-<code>astype(int)</code> הופך אותה ל-1 או 0. בדוגמה: ב-2010-01-04 מחר יש 3.2 מ"מ, ולכן 1. ב-2010-01-06 מחר יש 0.0, ולכן 0. <strong>למה 1.0 מ"מ:</strong> זה הסף שבהנחיות, והוא מסנן טפטוף זניח.</p>
+
+<h3>שלב 5: מחיקת היום האחרון של כל עיר</h3>
+<pre><code>last_rows = next_day_precip.isna()
+df = df.loc[~last_rows].reset_index(drop=True)</code></pre>
+<p><code>isna()</code> מסמן את השורות שאין להן מחר. אלה בדיוק 6 שורות, ה-2026-11-07 של כל עיר. <code>~</code> הופך את הסימון, ו-<code>loc</code> משאיר רק את השאר. <strong>למה:</strong> ליום האחרון אין תשובה נכונה. אם היינו משאירים אותו, NaN ≥ 1.0 יוצא False, והיום היה מקבל 0, כלומר קביעה ש"לא ירד גשם" בלי לדעת. <strong>התוצאה:</strong> 36,930 − 6 = 36,924 שורות.</p>
+
+<h3>שלב 6: בדיקה ידנית</h3>
+<p>מציגים 8 שורות של לונדון ובודקים בעין שה-<code>RainTomorrow</code> בכל שורה מתאים למשקעים בשורה שמתחתיה.</p>
+
+<h3>שלב 7: ההסתברות האפריורית</h3>
+<pre><code>prior = df["RainTomorrow"].value_counts(normalize=True).sort_index()</code></pre>
+<p>סופרים כמה פעמים מופיעים 0 ו-1, ו-<code>normalize=True</code> הופך את הספירה לאחוזים. <strong>התוצאה:</strong> 63.8% לא ירד גשם למחרת, ו-36.2% ירד. לפי עיר, הטווח הוא מ-32.2% (סידני) עד 45.2% (ונקובר). מודל שתמיד עונה "לא" צודק ב-63.8% מהמקרים, וזה ה-<a href="#g-baseline">baseline</a>.</p>
+
+<div class="box danger"><b class="t">הנקודה הכי חשובה: דליפת מידע</b><code>next_day_precip</code> (הגשם של מחר) <strong>לא נשמר בטבלה</strong>. הוא משמש רק לבניית המטרה. אם הוא היה נשאר, המודל היה רואה את התשובה עצמה ו"חוזה" ב-100% הצלחה, ובמבחן האמיתי על העתיד היה נכשל לגמרי.</div>
+
+<!-- ============================================================ -->
+<h2 id="explain-eda">14. הסבר מפורט: הבנת הנתונים (מחברת, סעיף 3)</h2>
+<p><strong>המטרה של הסעיף:</strong> לפני שעושים משהו עם הנתונים, מסתכלים עליהם. בסעיף הזה <strong>לא משנים כלום בנתונים</strong>, רק לומדים אותם. כל החלטה בסעיף 5 (מה להסיר, אילו מאפיינים לבנות) צריכה להישען על משהו שראינו כאן.</p>
+
+<h3>לפני הכל: עותק לעבודה</h3>
+<pre><code>eda = df.copy()
+eda["month"] = eda["date"].dt.month
+eda["rain_today"] = (eda["precipitation_sum"] &gt;= RAIN_THRESHOLD_MM).astype(int)
+eda["temp_range"] = eda["temperature_2m_max"] - eda["temperature_2m_min"]</code></pre>
+<p>יוצרים עותק בשם <code>eda</code> ומוסיפים לו עמודות עזר: חודש, האם ירד היום גשם, וההפרש בין טמפרטורת המקסימום למינימום. <strong>למה עותק:</strong> עמודות שנוסיף ל-<code>df</code> ייכנסו בסוף ל-<code>final_dataset.csv</code>. את ההחלטה אילו מאפיינים נכנסים מקבלים רק בסעיף 5.</p>
+
+<h3>3.1: מקור הנתונים ומילון משתנים</h3>
+<p>הנתונים הם <a href="#g-reanalysis">reanalysis</a> (ERA5): מודל פיזיקלי שמשלב תצפיות ומחשב ערך לכל נקודת רשת. <strong>מה זה אומר:</strong> לא צפויים ערכים חסרים, אבל הנתונים "חלקים" יותר מתחנה אמיתית. בנוסף, לכל משתנה נכתבו משמעות, יחידות ו<a href="#g-vartypes">סוג</a>. שתי מלכודות: <code>weather_code</code> הוא קטגוריה ולא מספר, וכיוון הרוח הוא משתנה מעגלי.</p>
+
+<h3>3.2: התפלגויות (הסתברויות אפריוריות)</h3>
+<p><strong>הדרישה:</strong> להציג התפלגות של 3 משתנים רציפים ו-2 קטגוריאליים, ולכתוב משפט על כל אחד.</p>
+<pre><code>sns.kdeplot(data=eda, x="temperature_2m_mean", hue="location", palette=CITY_COLORS,
+            common_norm=False, ax=axes[0])</code></pre>
+<ul>
+  <li><code>kdeplot</code>: עקומת <a href="#g-kde">KDE</a>, מעין היסטוגרמה מוחלקת.</li>
+  <li><code>hue="location"</code>: עקומה לכל עיר, בצבע קבוע.</li>
+  <li><code>common_norm=False</code>: כל עקומה מנורמלת לעצמה, כך שמשווים צורות בין ערים ולא כמויות.</li>
+</ul>
+<p><strong>לגבי המשקעים:</strong> מציירים רק ימים עם משקעים, כי 45.5% מהימים הם 0 מ"מ בדיוק והם היו מסתירים את השאר. גם הסקאלה לוגריתמית (<code>log_scale=True</code>), כי רוב הימים הגשומים הם כמה מ"מ בודדים ומעטים מגיעים ל-100 ומעלה.</p>
+<p><strong>מה למדנו:</strong></p>
+<ul>
+  <li><strong>טמפרטורה:</strong> הערים שונות מאוד, ולרוב העקומות יש שתי "גבעות", חורף וקיץ.</li>
+  <li><strong>משקעים:</strong> מוטים מאוד ימינה, ולכן בהמשך משתמשים במתאם Spearman.</li>
+  <li><strong>רוח:</strong> ונקובר רגועה במיוחד. בטוקיו יש "זנב" של ימים סוערים, כנראה טייפונים.</li>
+  <li><strong>עיר:</strong> לכל עיר בדיוק 6,154 ימים.</li>
+  <li><strong><code>weather_code</code>:</strong> מופיעים רק 13 קודים. "מעונן" נפוץ ביותר, כ-35%. אין ערפל, ממטרים או סופות רעמים. ← נקבץ את הקודים בסעיף 5.</li>
+</ul>
+<p>הפונקציה <code>wmo_group</code> מחזירה לכל קוד את הקבוצה שלו לפי הטווחים בתקן WMO: 0–3 בהיר/מעונן, עד 57 טפטוף, עד 67 גשם, ומעל זה שלג. היא משמשת רק לצביעה בגרף.</p>
+
+<h3>3.3: איזון וייצוגיות</h3>
+<p><strong>איזון:</strong> 36:64, חוסר איזון מתון. ← בחלק ב' אחוז דיוק לבד לא מספיק. <strong>ייצוגיות:</strong> רק 6 ערים באקלים ממוזג, והנתונים מגיעים ממודל. אבל המבחן יגיע מאותן ערים. <strong>לאורך זמן:</strong> אחוז הימים הגשומים בכל שנה נע בין 33% ל-40%, בלי מגמה ברורה. ← התקופה יציבה, וזה טוב לחיזוי של העתיד.</p>
+
+<h3>3.4: מפת מתאמים</h3>
+<pre><code>corr = eda[numeric_cols].corr(method="spearman")
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="RdBu_r", vmin=-1, vmax=1, ...)</code></pre>
+<p><strong>Spearman</strong> בודק אם כשמשתנה אחד עולה גם השני עולה, לפי הדירוג של הערכים. לכן הוא עמיד להטיה ולערכים קיצוניים. <code>weather_code</code> (קטגוריה) וכיוון הרוח (מעגלי) לא נכללו, כי מתאם איתם לא אומר כלום.</p>
+<p><strong>מה למדנו:</strong> ארבע הטמפרטורות כמעט זהות (0.92–0.99), וכך גם שלושת משתני המשקעים (0.96–0.98). מול המטרה, רק המשקעים מראים קשר (0.33). <strong>הסתייגות:</strong> מתאם 0 לא אומר שאין קשר, רק שאין קשר "ישר" על פני כל הערים יחד.</p>
+
+<h3>3.5: ארבעה קשרים מעניינים</h3>
+<h4>3.5.1: גשם היום ← גשם מחר (צפוי)</h4>
+<pre><code>persist = eda.pivot_table(index="location", columns="rain_today", values="RainTomorrow")</code></pre>
+<p><code>pivot_table</code> בונה טבלה של עיר × "ירד היום / לא ירד", ובכל תא יש את הממוצע של <code>RainTomorrow</code>. ממוצע של עמודה של 0 ו-1 הוא בדיוק אחוז ה-1, כלומר ההסתברות. <strong>התוצאה:</strong> 55.7% לעומת 25.2%, יותר מפי 2, בכל הערים. ← <code>rain_today</code> יהיה מאפיין חזק.</p>
+<h4>3.5.2: עונה × עיר</h4>
+<p>ונקובר גשומה בחורף ויבשה בקיץ, טוקיו להפך, וסידני גשומה בפברואר–מרץ. ← חודש לבד לא עוזר, כי הדפוסים מבטלים זה את זה. רק חודש <strong>יחד עם</strong> עיר עוזר, ועונה צריכה להיות מוגדרת לפי חצי הכדור.</p>
+<h4>3.5.3: כיוון הרוח (ההפתעה)</h4>
+<pre><code>shifted = (eda["wind_direction_10m_dominant"] + 22.5) % 360
+eda["wind_sector"] = pd.cut(shifted, bins=range(0, 361, 45), labels=SECTORS, right=False)</code></pre>
+<p><strong>הבעיה:</strong> "צפון" הוא מ-337.5° עד 22.5°, טווח שעובר דרך 0. <strong>הפתרון:</strong> מוסיפים 22.5°, ו-<code>% 360</code> (שארית חלוקה) מחזיר ערכים מעל 360 להתחלה. עכשיו צפון הוא 0°–45°, ואפשר לחתוך ל-8 פלחים. <code>right=False</code> אומר שכל פלח כולל את הגבול השמאלי ולא את הימני. הגרף הוא קוטבי (<code>projection="polar"</code>), עם צפון למעלה וכיוון השעון כמו במצפן.</p>
+<p><strong>התוצאה:</strong> לונדון וברלין מקבלות גשם מדרום-מערב, ניו יורק ממזרח. <strong>ההפתעה היא ונקובר:</strong> רוח מזרחית מביאה גשם ב-72% מהמקרים, ומערבית רק ב-22%. ההסבר המשוער הוא הגיאוגרפיה המקומית, וצריך לאמת אותו. ← זה מסביר למה המתאם הכללי של הרוח חלש: ההשפעה חזקה אבל שונה בכל עיר. לכן נקודד את הרוח בצורה מעגלית, יחד עם העיר.</p>
+<h4>3.5.4: טווח הטמפרטורה (פחות צפוי)</h4>
+<p>עננים שומרים על היום קריר ועל הלילה חם, ולכן ההפרש בין המקסימום למינימום קטן. <strong>התוצאה:</strong> לפני יום גשום החציון הוא 6.5°, ולפני יום יבש 7.9°. ← <code>temp_range</code> הוא מועמד למאפיין חדש.</p>
+
+<h3>3.6: אילו משתנים משפיעים על המטרה</h3>
+<p>לכל משתנה מציירים את ההתפלגות בנפרד לימים לפני גשם ולימים לפני יום יבש. אם ההתפלגויות שונות, המשתנה כנראה עוזר לחזות. את שעות המשקעים מציירים בהיסטוגרמה (<code>discrete=True</code>), כי הן מספר שלם.</p>
+<ul>
+  <li><strong>שעות משקעים:</strong> המשתנה החזק ביותר. חציון של 5 שעות לפני יום גשום, ו-0 לפני יום יבש.</li>
+  <li><strong><code>weather_code</code>:</strong> "מדרגות". אחרי יום בהיר 5% גשם מחר, אחרי מעונן 25%, ואחרי גשם או שלג בינוני-כבד 50–62%.</li>
+  <li><strong>מהירות רוח:</strong> השפעה חלשה, 18.5 לעומת 17.4 קמ"ש.</li>
+  <li><strong>טמפרטורה:</strong> העקומות כמעט זהות. לבד היא לא אומרת הרבה.</li>
+</ul>
+
+<h3>3.7: אילו משתנים אפשר להסיר</h3>
+<pre><code>snow_part = eda["precipitation_sum"] - eda["rain_sum"]
+has_snow = snow_part &gt; 0.05</code></pre>
+<p><code>snow_part</code> הוא כמה מהמשקעים לא היו גשם. <code>&gt; 0.05</code> היא סובלנות קטנה לעיגול. <strong>התוצאה:</strong> כמעט כל הנקודות בגרף על האלכסון (משקעים = גשם), והחריגות הן <strong>בדיוק</strong> הימים עם קודי השלג 71, 73 ו-75. ← <code>rain_sum</code> כמעט לא מוסיף מידע, ומבין ארבע הטמפרטורות מספיקה אחת. ההחלטות עצמן מתקבלות בסעיף 5.</p>
+
+<h3>החיבור לסעיף 5</h3>
+<div class="tbl"><table>
+<thead><tr><th>מה ראינו בסעיף 3</th><th>מה נעשה בסעיף 5</th></tr></thead>
+<tbody>
+<tr><td>גשם היום מכפיל את הסיכוי לגשם מחר</td><td>מאפיין <code>rain_today</code></td></tr>
+<tr><td>ארבעת משתני הטמפרטורה כפולים</td><td>להשאיר אחד ולהוסיף <code>temp_range</code></td></tr>
+<tr><td><code>rain_sum</code> כמעט זהה ל-<code>precipitation_sum</code></td><td>להסיר, ולגזור דגל שלג</td></tr>
+<tr><td>כיוון הרוח חשוב, שונה בכל עיר, ומעגלי</td><td>קידוד sin/cos או u/v, יחד עם העיר</td></tr>
+<tr><td>העונתיות שונה בכל עיר, ובסידני הפוכה</td><td>חודש ב-sin/cos, ועונה לפי חצי הכדור</td></tr>
+<tr><td><code>weather_code</code>: 13 קודים עם "מדרגות"</td><td>קיבוץ לפי סוג ועוצמה</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="model-input">15. איך המודל יחזה ומה נכניס אליו</h2>
+<p>המודל <strong>לא מבין מטאורולוגיה</strong>. הוא לומד דפוסים מדוגמאות. כל אחת מ-36,924 השורות היא זוג של "ככה נראה היום" ← "זה מה שקרה מחר". המודל מחפש חוקיות, למשל: "כשירד היום גשם 5 שעות בוונקובר בדצמבר עם רוח מזרחית, כמעט תמיד ירד גשם גם מחר".</p>
+
+<div class="box warn"><b class="t">לא מכניסים את התאריך של מחר</b>אם המודל מקבל רק תאריך, הדבר הכי טוב שהוא יכול להגיד הוא ממוצע, למשל "בדצמבר בוונקובר יורד גשם ב-64% מהימים". זה לא חיזוי. מה שמכניסים זה את <strong>מזג האוויר של היום</strong>, כי מזג האוויר של מחר ממשיך אותו. התאריך משמש רק כדי לדעת באיזו עונה אנחנו.</div>
+
+<h3>דוגמה: היום, 15 בנובמבר, בלונדון (ערכים להמחשה)</h3>
+<div class="tbl"><table>
+<thead><tr><th>מה מכניסים</th><th>ערך</th></tr></thead>
+<tbody>
+<tr><td>העיר</td><td>לונדון</td></tr>
+<tr><td>התאריך של היום</td><td>15 בנובמבר, וממנו המודל לוקח רק חודש ועונה</td></tr>
+<tr><td>כמה גשם ירד היום</td><td>6.2 מ"מ</td></tr>
+<tr><td>כמה שעות ירד גשם</td><td>8</td></tr>
+<tr><td>סוג מזג האוויר</td><td>גשם בינוני (קוד 63)</td></tr>
+<tr><td>טמפרטורה</td><td>ממוצע 9°, מקסימום 11°, מינימום 7°</td></tr>
+<tr><td>רוח</td><td>35 קמ"ש, מדרום-מערב</td></tr>
+</tbody></table></div>
+<p>← המודל עונה 1 ("מחר כנראה יירד גשם"), או הסתברות כמו 68%.</p>
+
+<h3>רשימת המאפיינים המשוערת (תיקבע סופית בסעיף 5)</h3>
+<div class="tbl"><table>
+<thead><tr><th>מאפיין</th><th>מקור</th><th>למה</th></tr></thead>
+<tbody>
+<tr><td><code>precipitation_sum</code></td><td>גולמי</td><td>כמה גשם ירד היום</td></tr>
+<tr><td><code>precipitation_hours</code></td><td>גולמי</td><td>החזק ביותר בסעיף 3</td></tr>
+<tr><td><code>rain_today</code></td><td>≥ 1 מ"מ היום</td><td>גשם היום מכפיל את הסיכוי למחר</td></tr>
+<tr><td>קבוצת <code>weather_code</code></td><td>קיבוץ</td><td>"מדרגות" של 5%–62%</td></tr>
+<tr><td><code>temperature_2m_mean</code></td><td>גולמי</td><td>טמפרטורה אחת במקום ארבע</td></tr>
+<tr><td><code>temp_range</code></td><td>max − min</td><td>ביום מעונן ההפרש קטן</td></tr>
+<tr><td><code>wind_speed_10m_max</code></td><td>גולמי</td><td>השפעה חלשה</td></tr>
+<tr><td><code>wind_u</code>, <code>wind_v</code></td><td>כיוון + מהירות</td><td>כיוון הרוח בצורה שהמודל מבין</td></tr>
+<tr><td><code>month_sin</code>, <code>month_cos</code></td><td>מהתאריך</td><td>עונתיות, דצמבר קרוב לינואר</td></tr>
+<tr><td>עונה</td><td>חודש + חצי כדור</td><td>בסידני העונות הפוכות</td></tr>
+<tr><td>עיר (One-Hot)</td><td>6 עמודות של 0/1</td><td>לכל עיר אקלים אחר</td></tr>
+<tr><td>דגל שלג</td><td><code>precipitation_sum − rain_sum</code></td><td>האם חלק מהמשקעים היו שלג</td></tr>
+</tbody></table></div>
+<p><strong>מה לא נכניס:</strong> <code>rain_sum</code> (כמעט זהה), שלוש הטמפרטורות הנוספות, התאריך המלא (המודל לא יראה שוב את 2015), וכיוון הרוח כמספר גולמי.</p>
+
+<h3>איך זה ייבחן בחלק ב'</h3>
+<div class="chain"><span>JSON גולמי של יום מהעתיד</span><i>←</i><span>הפונקציה שלנו מחשבת מאפיינים</span><i>←</i><span>המודל מחזיר 0 או 1</span><i>←</i><span>משווים למה שקרה באמת</span></div>
+<p>לכן העיבוד חייב להיות <strong>פונקציה אחת</strong> שעובדת גם על כל הטבלה שלנו וגם על JSON בודד. <strong>שאלה פתוחה:</strong> אם כל JSON של המבחן מכיל רק יום אחד, אין "אתמול", ואי אפשר להשתמש במאפייני עבר כמו גשם ביומיים האחרונים. צריך לשאול את המתרגל.</p>
+
+<h3>אילו מודלים (חלק ב')</h3>
+<ul>
+  <li><strong>רגרסיה לוגיסטית:</strong> נותנת "משקל" לכל מאפיין ומחשבת מהם הסתברות.</li>
+  <li><strong>עץ החלטה:</strong> סדרה של שאלות כן/לא, למשל "ירד היום גשם? ← העיר ונקובר? ← חורף?".</li>
+  <li><strong>Random Forest:</strong> הרבה עצים שמצביעים יחד. לרוב חזק יותר מעץ בודד.</li>
+</ul>
+<p>המטרה: לעבור את ה-baseline של 64%, ובעיקר לזהות כמה שיותר מהימים הגשומים, שאותם מודל של "תמיד לא" מפספס.</p>
+
+<footer>מבוסס על ההנחיות לחלק א' (<code>ML_Project_Part_A_Instructions.docx</code>), על <code>HANDOFF.md</code> ועל הקוד שבתיקייה. המספרים נלקחו מהנתונים שלנו. דברים שלא כתובים בהנחיות הם המלצות, ובמקרה של סתירה ההנחיות והמתרגל קובעים.</footer>
+</div>
+</body>
+</html>

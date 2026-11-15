@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מדריך פרויקט RainTomorrow</title>
+<style>
+:root{
+  --bg:#f7f6f2; --surface:#ffffff; --surface2:#f0eee8; --ink:#1d1d1b; --muted:#5f5d57;
+  --line:#e2dfd6; --accent:#1f5f8b; --accent-soft:#e3eef6; --warn:#9a5a00; --warn-soft:#fdf1dd;
+  --danger:#a33a2a; --danger-soft:#fbe6e2; --ok:#2d6a3e; --ok-soft:#e4f2e7; --code-bg:#f3f1ea;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#16171a; --surface:#1f2125; --surface2:#26292e; --ink:#ecebe6; --muted:#a6a39b;
+    --line:#33363c; --accent:#7db6e0; --accent-soft:#1d3142; --warn:#e8b25c; --warn-soft:#3a2c14;
+    --danger:#f08a78; --danger-soft:#3b1f1a; --ok:#86c999; --ok-soft:#1b3022; --code-bg:#1a1c20;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16171a; --surface:#1f2125; --surface2:#26292e; --ink:#ecebe6; --muted:#a6a39b;
+  --line:#33363c; --accent:#7db6e0; --accent-soft:#1d3142; --warn:#e8b25c; --warn-soft:#3a2c14;
+  --danger:#f08a78; --danger-soft:#3b1f1a; --ok:#86c999; --ok-soft:#1b3022; --code-bg:#1a1c20;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Segoe UI","Arial Hebrew",Arial,"Noto Sans Hebrew",sans-serif;font-size:16px;line-height:1.7}
+.wrap{max-width:980px;margin:0 auto;padding-inline:20px;padding-block:28px 80px}
+header.hero{padding-block:16px 8px;border-bottom:1px solid var(--line);margin-bottom:24px}
+.kicker{color:var(--accent);font-weight:600;font-size:.9rem;letter-spacing:.02em}
+h1{font-size:2rem;line-height:1.25;margin:.2em 0 .3em}
+h2{font-size:1.5rem;margin:2.4em 0 .6em;padding-top:.4em;border-top:1px solid var(--line)}
+h3{font-size:1.15rem;margin:1.6em 0 .4em}
+h4{font-size:1rem;margin:1.2em 0 .3em}
+p{margin:.5em 0}
+.lead{color:var(--muted);font-size:1.05rem;max-width:62ch}
+a{color:var(--accent)}
+nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:18px 0}
+nav.toc ol{margin:.3em 0;padding-inline-start:1.4em;columns:2;column-gap:2em}
+nav.toc li{break-inside:avoid;margin:.15em 0}
+@media (max-width:640px){nav.toc ol{columns:1}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0}
+.box{border-radius:8px;padding:10px 14px;margin:12px 0;border-inline-start:4px solid}
+.box.why{background:var(--accent-soft);border-color:var(--accent)}
+.box.warn{background:var(--warn-soft);border-color:var(--warn)}
+.box.danger{background:var(--danger-soft);border-color:var(--danger)}
+.box.ok{background:var(--ok-soft);border-color:var(--ok)}
+.box b.t{display:block;margin-bottom:2px}
+code,pre{font-family:Consolas,"Cascadia Mono",Menlo,monospace;font-size:.88em}
+code{background:var(--code-bg);padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+  overflow-x:auto;direction:ltr;text-align:left;line-height:1.5}
+pre code{background:none;padding:0}
+.tbl{overflow-x:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;background:var(--surface);font-size:.94rem}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:start;vertical-align:top}
+th{background:var(--surface2);font-weight:600}
+td code{white-space:nowrap}
+.tag{display:inline-block;font-size:.78rem;padding:0 8px;border-radius:99px;background:var(--surface2);
+  border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+/* pipeline */
+.pipe{position:relative;margin:18px 0;padding:0;list-style:none}
+.stage{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px 10px;margin:0 0 14px;margin-inline-start:44px}
+.stage::before{content:attr(data-n);position:absolute;inset-inline-start:-44px;top:12px;width:32px;height:32px;
+  border-radius:50%;background:var(--accent);color:var(--surface);display:grid;place-items:center;font-weight:700}
+.stage:not(:last-child)::after{content:"";position:absolute;inset-inline-start:-29px;top:46px;bottom:-16px;width:2px;background:var(--line)}
+.stage h3{margin:0 0 4px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.checks{list-style:none;padding:0;margin:6px 0}
+.checks li{display:flex;gap:8px;align-items:flex-start;padding:3px 0}
+.checks input{margin-top:6px;flex:none;width:16px;height:16px;accent-color:var(--accent)}
+.checks label{cursor:pointer}
+.checks input:checked + label{color:var(--muted);text-decoration:line-through}
+.progress{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:4px 0 2px}
+.progress span{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
+.small{font-size:.88rem;color:var(--muted)}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.chain span{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:3px 10px}
+.chain i{font-style:normal;color:var(--muted)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 14px;margin:10px 0}
+summary{cursor:pointer;font-weight:600}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+footer{margin-top:48px;color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kicker">למידת מכונה 364-1-1811 · פרויקט חלק א'</div>
+  <h1>מדריך הפרויקט: חיזוי RainTomorrow</h1>
+  <p class="lead">כל מושגי ה-ML שחלק א' דורש, מוסברים על הנתונים של הפרויקט עצמו, ותוכנית עבודה מסודרת מהתקנת פייתון ועד קובץ ה-ZIP.</p>
+</header>
+
+<nav class="toc" aria-label="תוכן עניינים">
+  <strong>תוכן עניינים</strong>
+  <ol>
+    <li><a href="#big-picture">התמונה הגדולה</a></li>
+    <li><a href="#pipeline">Pipeline: שלבי העבודה</a></li>
+    <li><a href="#supervised">למידה מונחית וסיווג בינארי</a></li>
+    <li><a href="#data">הנתונים: מקור ומילון משתנים</a></li>
+    <li><a href="#types">סוגי משתנים</a></li>
+    <li><a href="#leakage">דליפת מידע (Data Leakage)</a></li>
+    <li><a href="#priors">הסתברויות אפריוריות ואיזון</a></li>
+    <li><a href="#distributions">התפלגויות: PDF וגרף עמודות</a></li>
+    <li><a href="#relations">קשרים בין משתנים</a></li>
+    <li><a href="#quality">איכות נתונים</a></li>
+    <li><a href="#selection">בחירת מאפיינים</a></li>
+    <li><a href="#discretization">דיסקרטיזציה</a></li>
+    <li><a href="#engineering">גזירת מאפיינים</a></li>
+    <li><a href="#time">היבטי זמן ומבט לחלק ב'</a></li>
+    <li><a href="#report">איך לכתוב את הדו"ח</a></li>
+    <li><a href="#pitfalls">מלכודות נפוצות</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="big-picture">1. התמונה הגדולה</h2>
+<p>בפרויקט כולו (חלק א' + חלק ב') בונים מערכת שמקבלת נתוני מזג אוויר של יום מסוים בעיר מסוימת ומחזה <strong>האם מחר ירדו לפחות 1.0 מ"מ משקעים</strong>.</p>
+<div class="chain">
+  <span>API של Open-Meteo</span><i>←</i><span>קובצי JSON גולמיים</span><i>←</i><span>טבלה מאוחדת</span><i>←</i><span>משתנה מטרה</span><i>←</i><span>ניתוח והכנה</span><i>←</i><span class="tag">חלק ב': מודלים</span>
+</div>
+<div class="grid2">
+  <div class="card"><h4 style="margin-top:0">חלק א' (עכשיו)</h4>איסוף נתונים, בניית ה-dataset, הבנת הנתונים, בדיקת איכות והכנה. <strong>אין</strong> אימון מודלים.</div>
+  <div class="card"><h4 style="margin-top:0">חלק ב' (בהמשך)</h4>אימון והשוואה של מודלים. הבחינה הסופית תהיה על נתונים <strong>מהעתיד</strong>, שיגיעו כ-JSON גולמי ויעברו דרך הקוד שלכם.</div>
+</div>
+<div class="box why"><b class="t">מה המרצים בודקים באמת</b>65 מתוך 100 נקודות הם על הבנת הנתונים (35) והכנת הנתונים (30). הקוד הוא כלי. מה שמקבל ניקוד הוא ההסבר: <em>למה</em> עשיתם משהו, <em>מה</em> יצא ו<em>מה</em> זה אומר להמשך.</div>
+
+<!-- ============================================================ -->
+<h2 id="pipeline">2. Pipeline: שלבי העבודה המוצעים</h2>
+<p>הצעה לסדר עבודה. כל שלב בנוי על הקודם. אפשר לסמן ✓ על כל משימה (הסימונים נשמרים בדפדפן הזה בלבד).</p>
+<div class="progress" aria-hidden="true"><span id="bar"></span></div>
+<p class="small" id="progress-text"></p>
+
+<ol class="pipe">
+
+<li class="stage" data-n="0">
+  <h3>הקמת סביבת עבודה</h3>
+  <div class="meta"><span class="tag">חצי יום</span><span class="tag">אין ניקוד ישיר, אבל חובה לשחזוריות</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c0a"><label for="c0a">להתקין Python 3.11 או 3.12 מ-python.org (לסמן "Add to PATH")</label></li>
+    <li><input type="checkbox" id="c0b"><label for="c0b">ליצור סביבה וירטואלית: <code>python -m venv .venv</code></label></li>
+    <li><input type="checkbox" id="c0c"><label for="c0c">להתקין: <code>requests pandas numpy matplotlib seaborn scipy jupyter</code></label></li>
+    <li><input type="checkbox" id="c0d"><label for="c0d">ליצור את מבנה התיקיות: <code>data/raw</code>, <code>data/processed</code></label></li>
+  </ul>
+<pre><code>ml_project/
+├── data/
+│   ├── raw/            # JSON גולמי + sensed_data.csv
+│   └── processed/      # final_dataset.csv
+├── data_collection.py
+├── sensing.py
+├── dataset_creation.ipynb
+├── requirements.txt
+└── README.md           # שורה ראשונה: Group: &lt;number&gt;</code></pre>
+</li>
+
+<li class="stage" data-n="1">
+  <h3>איסוף נתונים: <code>data_collection.py</code></h3>
+  <div class="meta"><span class="tag">יום אחד</span><span class="tag">חלק מ-20 נק'</span></div>
+  <p>מתחילים מקובץ הדוגמה ומשפרים אותו. החלטות שצריך לקבל ולנמק בדו"ח:</p>
+  <ul class="checks">
+    <li><input type="checkbox" id="c1a"><label for="c1a"><strong>טווח תאריכים.</strong> המלצה: מ-2010-01-01 ועד כשבוע לפני היום (לארכיון יש עיכוב של כמה ימים). יותר שנים נותנות יותר דוגמאות ויותר עונות, וזה חשוב כי הבחינה תהיה על העתיד.</label></li>
+    <li><input type="checkbox" id="c1b"><label for="c1b"><strong>חלוקת בקשות.</strong> המלצה: בקשה לכל עיר × שנה, ושמירה כ-<code>london_2015.json</code>. קבצים קטנים קלים לבדיקה, ואם משהו נכשל מורידים רק אותו שוב.</label></li>
+    <li><input type="checkbox" id="c1c"><label for="c1c"><strong>מגבלת קצב.</strong> לספור בקשות ולהמתין לפני שעוברים 5,000 לשעה או 10,000 ל-24 שעות (הפונקציה <code>wait_for_rate_limits</code> מהדוגמה עושה את זה).</label></li>
+    <li><input type="checkbox" id="c1d"><label for="c1d"><strong>טיפול בשגיאות.</strong> על 429 ו-5xx: להמתין ולנסות שוב, עם זמן המתנה שגדל בכל ניסיון (backoff) ומספר ניסיונות מקסימלי. על 400: לעצור ולהדפיס את הסיבה, כי הבקשה עצמה שגויה.</label></li>
+    <li><input type="checkbox" id="c1e"><label for="c1e"><strong>Cache.</strong> אם הקובץ כבר קיים, לדלג עליו. לא מורידים שוב בכל הרצה.</label></li>
+    <li><input type="checkbox" id="c1f"><label for="c1f">לשמור את ה-JSON <strong>בדיוק</strong> כפי שהתקבל, בלי שום עיבוד.</label></li>
+  </ul>
+<pre><code>for attempt in range(MAX_RETRIES):
+    response = session.get(ENDPOINT, params=params, timeout=30)
+    count_request()                       # כל ניסיון נספר
+    if response.status_code == 200:
+        break
+    if response.status_code == 429 or response.status_code &gt;= 500:
+        time.sleep(2 ** attempt)          # backoff: 1, 2, 4, 8... שניות
+        continue
+    if response.status_code == 400:
+        raise ValueError(response.json().get("reason"))  # לתקן את הבקשה</code></pre>
+</li>
+
+<li class="stage" data-n="2">
+  <h3>איחוד הנתונים: <code>sensing.py</code></h3>
+  <div class="meta"><span class="tag">חצי יום</span><span class="tag">חלק מ-20 נק'</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c2a"><label for="c2a">לקרוא את כל קובצי ה-JSON ב-<code>data/raw</code>. <strong>אסור</strong> לפנות ל-API מהקובץ הזה (לא לעשות <code>import requests</code> בכלל).</label></li>
+    <li><input type="checkbox" id="c2b"><label for="c2b">להמיר את <code>payload["daily"]</code> לטבלה, ולהוסיף עמודות <code>location</code> ו-<code>date</code></label></li>
+    <li><input type="checkbox" id="c2c"><label for="c2c">לאחד את כל הטבלאות, למיין, ולהסיר כפילויות לפי <code>location + date</code></label></li>
+    <li><input type="checkbox" id="c2d"><label for="c2d">לשמור כ-<code>data/raw/sensed_data.csv</code> (זה המיקום שכתוב בנספח)</label></li>
+  </ul>
+<pre><code>df = pd.DataFrame(payload["daily"]).rename(columns={"time": "date"})
+df["location"] = location
+...
+all_df = pd.concat(frames).drop_duplicates(subset=["location", "date"])</code></pre>
+</li>
+
+<li class="stage" data-n="3">
+  <h3>יצירת משתנה המטרה ו-<code>final_dataset.csv</code></h3>
+  <div class="meta"><span class="tag">שעה-שעתיים</span><span class="tag">הלב של הפרויקט</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c3a"><label for="c3a">למיין לפי תאריך בתוך כל עיר</label></li>
+    <li><input type="checkbox" id="c3b"><label for="c3b">לבדוק שאין חורים בתאריכים. <code>shift(-1)</code> מניח שהשורה הבאה היא באמת מחר.</label></li>
+    <li><input type="checkbox" id="c3c"><label for="c3c"><code>RainTomorrow = 1</code> אם <code>precipitation_sum</code> של מחר ≥ 1.0, אחרת 0</label></li>
+    <li><input type="checkbox" id="c3d"><label for="c3d">למחוק את היום האחרון בכל עיר (אין לו "מחר")</label></li>
+    <li><input type="checkbox" id="c3e"><label for="c3e">לשמור כ-<code>data/processed/final_dataset.csv</code></label></li>
+  </ul>
+<pre><code>df = df.sort_values(["location", "date"])
+next_precip = df.groupby("location")["precipitation_sum"].shift(-1)
+df["RainTomorrow"] = (next_precip &gt;= 1.0).astype(int)
+df = df[next_precip.notna()]     # מוחק את היום האחרון בכל עיר</code></pre>
+  <div class="box warn"><b class="t">לא ברור בהנחיות</b>לא כתוב במפורש אם השלב הזה שייך ל-<code>sensing.py</code> או למחברת. כדאי לשאול את המתרגלת. עד שתהיה תשובה, אפשר לשים אותו במחברת (בנספח כתוב שהיא כוללת "יצירת משתנה המטרה").</div>
+</li>
+
+<li class="stage" data-n="4">
+  <h3>הגדרת הבעיה (כתיבה)</h3>
+  <div class="meta"><span class="tag">חצי יום</span><span class="tag">5 נק'</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c4a"><label for="c4a">רקע: למה חיזוי גשם חשוב (חקלאות, תחבורה, אירועים, ניהול מים)</label></li>
+    <li><input type="checkbox" id="c4b"><label for="c4b">מחקרים קודמים: מודלים נומריים (NWP), ומחקרי ML על dataset ה-"Rain in Australia" (Kaggle) שמגדיר בעיה דומה מאוד</label></li>
+    <li><input type="checkbox" id="c4c"><label for="c4c">שאלת המחקר במשפט אחד, ומה מצפים ש-ML ישיג</label></li>
+  </ul>
+</li>
+
+<li class="stage" data-n="5">
+  <h3>הבנת הנתונים (EDA) במחברת</h3>
+  <div class="meta"><span class="tag">2–3 ימים</span><span class="tag">35 נק'</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c5a"><label for="c5a">טבלת מילון משתנים: משמעות + סוג (<a href="#data">סעיף 4</a>)</label></li>
+    <li><input type="checkbox" id="c5b"><label for="c5b">התפלגות משתנה המטרה, בסך הכול ולפי עיר</label></li>
+    <li><input type="checkbox" id="c5c"><label for="c5c">PDF ל-3 משתנים רציפים לפחות, וגרף עמודות ל-2 קטגוריאליים לפחות</label></li>
+    <li><input type="checkbox" id="c5d"><label for="c5d">האם ה-dataset מאוזן? האם הוא מייצג?</label></li>
+    <li><input type="checkbox" id="c5e"><label for="c5e">3 קשרים "מעניינים" לפחות בין משתנים (צפויים ולא צפויים)</label></li>
+    <li><input type="checkbox" id="c5f"><label for="c5f">אילו מאפיינים צפויים להשפיע על המטרה, ולבדוק את זה בגרף</label></li>
+    <li><input type="checkbox" id="c5g"><label for="c5g">אילו משתנים אפשר להסיר, ולבדוק את ההנחה</label></li>
+  </ul>
+</li>
+
+<li class="stage" data-n="6">
+  <h3>איכות נתונים</h3>
+  <div class="meta"><span class="tag">חצי יום</span><span class="tag">חלק מ-35 נק'</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c6a"><label for="c6a">ערכים חסרים: כמה, איפה, ולמה</label></li>
+    <li><input type="checkbox" id="c6b"><label for="c6b">בדיקות היגיון (רשימה ב<a href="#quality">סעיף 10</a>)</label></li>
+    <li><input type="checkbox" id="c6c"><label for="c6c">תאריכים חסרים או כפולים</label></li>
+  </ul>
+</li>
+
+<li class="stage" data-n="7">
+  <h3>הכנת הנתונים</h3>
+  <div class="meta"><span class="tag">2 ימים</span><span class="tag">30 נק'</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c7a"><label for="c7a">בחירת מאפיינים: הסרת מאפיינים כפולים, רועשים או באיכות נמוכה, עם נימוק</label></li>
+    <li><input type="checkbox" id="c7b"><label for="c7b">טיפול בחוסרים: השמטה או השלמה מושכלת</label></li>
+    <li><input type="checkbox" id="c7c"><label for="c7c">דיסקרטיזציה של משתנה רציף אחד לפחות</label></li>
+    <li><input type="checkbox" id="c7d"><label for="c7d">גזירת מאפיינים חדשים (רעיונות ב<a href="#engineering">סעיף 13</a>)</label></li>
+    <li><input type="checkbox" id="c7e"><label for="c7e">לוודא שכל עיבוד אפשר להריץ גם על JSON גולמי חדש (בשביל סט המבחן של חלק ב')</label></li>
+  </ul>
+</li>
+
+<li class="stage" data-n="8">
+  <h3>כתיבת הדו"ח</h3>
+  <div class="meta"><span class="tag">2 ימים</span><span class="tag">5+5 נק'</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c8a"><label for="c8a">עד 10 עמודים, Arial 12, רווח שורה וחצי</label></li>
+    <li><input type="checkbox" id="c8b"><label for="c8b">עמוד שער: מספר קבוצה ותעודות זהות בלבד, <strong>בלי שמות</strong></label></li>
+    <li><input type="checkbox" id="c8c"><label for="c8c">לכל גרף: כותרת, שמות צירים ויחידות, ומשפט "מה למדנו"</label></li>
+    <li><input type="checkbox" id="c8d"><label for="c8d">ייצוא ל-PDF</label></li>
+  </ul>
+</li>
+
+<li class="stage" data-n="9">
+  <h3>בדיקת שחזוריות והגשה</h3>
+  <div class="meta"><span class="tag">חצי יום</span><span class="tag">אי עמידה = הורדת נקודות</span></div>
+  <ul class="checks">
+    <li><input type="checkbox" id="c9a"><label for="c9a"><code>pip freeze &gt; requirements.txt</code></label></li>
+    <li><input type="checkbox" id="c9b"><label for="c9b">README שהשורה הראשונה בו היא <code>Group: &lt;number&gt;</code></label></li>
+    <li><input type="checkbox" id="c9c"><label for="c9c">להריץ את המחברת מההתחלה (Restart &amp; Run All) ולשמור עם הפלטים</label></li>
+    <li><input type="checkbox" id="c9d"><label for="c9d">לבדוק בסביבה נקייה שהכול רץ מאפס</label></li>
+    <li><input type="checkbox" id="c9e"><label for="c9e">ZIP בשם <code>Group_&lt;number&gt;.zip</code>, בלי <code>.venv</code>, <code>.ipynb_checkpoints</code>, <code>__pycache__</code></label></li>
+  </ul>
+</li>
+</ol>
+
+<div class="box ok"><b class="t">סה"כ הערכה</b>כ-10 ימי עבודה נטו, כשרוב הזמן הולך לשלבים 5–8 (ניתוח וכתיבה).</div>
+
+<!-- ============================================================ -->
+<h2 id="supervised">3. למידה מונחית וסיווג בינארי</h2>
+<p><strong>למידה מונחית (Supervised Learning):</strong> לומדים מדוגמאות שכבר יש להן תשובה נכונה. כל שורה בטבלה היא דוגמה, עם:</p>
+<ul>
+  <li><strong>מאפיינים (Features, X):</strong> מה שיודעים היום. טמפרטורה, רוח, משקעים של היום, עיר, תאריך.</li>
+  <li><strong>משתנה מטרה (Target, y):</strong> מה שרוצים לחזות. כאן <code>RainTomorrow</code>.</li>
+</ul>
+<p><strong>סיווג (Classification)</strong> פירושו שהמטרה היא קטגוריה ולא מספר. <strong>בינארי</strong> פירושו שיש בדיוק שתי מחלקות: 1 ("ירד גשם מחר") או 0 ("לא ירד").</p>
+<div class="box why"><b class="t">בפרויקט</b>שורה אחת = יום אחד בעיר אחת. עם 6 ערים ו-15 שנים זה בערך 33,000 שורות.</div>
+<div class="box warn"><b class="t">רגרסיה מול סיווג</b>אפשר היה לחזות את כמות המשקעים (רגרסיה), אבל ההגדרה בפרויקט היא סף של 1.0 מ"מ. הסף מסנן "טפטוף" זניח ונחשב מקובל במטאורולוגיה כהגדרה של "יום גשום".</div>
+
+<!-- ============================================================ -->
+<h2 id="data">4. הנתונים: מקור ומילון משתנים</h2>
+<h3>מאיפה הנתונים מגיעים</h3>
+<p>ה-Historical Weather API של Open-Meteo <strong>לא</strong> מחזיר מדידות ישירות מתחנה מטאורולוגית. הוא מבוסס בעיקר על <strong>Reanalysis</strong>, בעיקר ERA5 של ECMWF: מודל פיזיקלי שמשלב תצפיות רבות (תחנות, לוויינים, בלוני מזג אוויר) ומפיק ערכים על רשת אחידה ברזולוציה של קילומטרים בודדים עד כ-25 ק"מ.</p>
+<div class="box why"><b class="t">למה זה חשוב לדו"ח</b>
+<ul style="margin:.2em 0">
+  <li>הנתונים "חלקים" יותר מתחנה אמיתית, ויכולים לפספס גשם מקומי.</li>
+  <li>הקואורדינטות שחוזרות (51.5 במקום 51.5074) הן נקודת הרשת הקרובה, ולא המיקום המדויק.</li>
+  <li>כמעט לא צפויים ערכים חסרים, כי זה פלט של מודל. זו תובנה ששווה לכתוב בסעיף איכות הנתונים.</li>
+</ul></div>
+
+<h3>מילון המשתנים</h3>
+<div class="tbl"><table>
+<thead><tr><th>משתנה</th><th>משמעות</th><th>יחידות</th><th>סוג</th></tr></thead>
+<tbody>
+<tr><td><code>location</code></td><td>העיר</td><td>-</td><td>קטגוריאלי, לא ניתן לסידור (נומינלי)</td></tr>
+<tr><td><code>date</code></td><td>התאריך</td><td>ISO</td><td>זמן. גוזרים ממנו חודש או עונה</td></tr>
+<tr><td><code>weather_code</code></td><td>קוד WMO למזג האוויר הדומיננטי ביום (0=בהיר, 3=מעונן, 61=גשם קל, 95=סופת רעמים...)</td><td>WMO</td><td>קטגוריאלי. נראה כמו מספר, אבל ממוצע של קודים חסר משמעות. יש סדר חלקי של חומרה</td></tr>
+<tr><td><code>temperature_2m_max</code></td><td>טמפרטורה מקסימלית בגובה 2 מטר</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>temperature_2m_min</code></td><td>טמפרטורה מינימלית</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>temperature_2m_mean</code></td><td>טמפרטורה ממוצעת</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>apparent_temperature_mean</code></td><td>טמפרטורה מורגשת (מושפעת מלחות ורוח)</td><td>°C</td><td>רציף</td></tr>
+<tr><td><code>precipitation_sum</code></td><td>סך כל המשקעים (גשם + ממטרים + שלג)</td><td>מ"מ</td><td>רציף, ≥ 0, עם הרבה אפסים</td></tr>
+<tr><td><code>rain_sum</code></td><td>גשם בלבד</td><td>מ"מ</td><td>רציף, ≥ 0</td></tr>
+<tr><td><code>precipitation_hours</code></td><td>מספר השעות ביום שהיו בהן משקעים</td><td>שעות</td><td>בדיד, 0 עד 24</td></tr>
+<tr><td><code>wind_speed_10m_max</code></td><td>מהירות רוח מקסימלית בגובה 10 מטר</td><td>קמ"ש</td><td>רציף</td></tr>
+<tr><td><code>wind_direction_10m_dominant</code></td><td>כיוון הרוח הדומיננטי</td><td>מעלות</td><td>רציף <strong>מעגלי</strong>: 359° ו-1° כמעט זהים</td></tr>
+<tr><td><code>RainTomorrow</code></td><td>משתנה המטרה</td><td>0/1</td><td>בינארי</td></tr>
+</tbody></table></div>
+<p class="small">מותר לאסוף משתנים נוספים (למשל <code>snowfall_sum</code>, <code>shortwave_radiation_sum</code>, <code>et0_fao_evapotranspiration</code>, <code>sunshine_duration</code>). המשתנים לרמות שעתיות כמו לחץ ולחות הם שיפור משמעותי אבל דורשים בקשות <code>hourly</code>. כדאי לבדוק בתיעוד אילו משתנים זמינים ברמה יומית.</p>
+
+<!-- ============================================================ -->
+<h2 id="types">5. סוגי משתנים</h2>
+<div class="tbl"><table>
+<thead><tr><th>סוג</th><th>הגדרה</th><th>דוגמה מהפרויקט</th><th>איך מציגים</th></tr></thead>
+<tbody>
+<tr><td>רציף</td><td>כל ערך בטווח</td><td>טמפרטורה, משקעים</td><td>היסטוגרמה / PDF, boxplot</td></tr>
+<tr><td>בדיד</td><td>מספרים שלמים, ספירה</td><td><code>precipitation_hours</code></td><td>גרף עמודות או היסטוגרמה</td></tr>
+<tr><td>קטגוריאלי נומינלי</td><td>קטגוריות בלי סדר</td><td><code>location</code></td><td>גרף עמודות</td></tr>
+<tr><td>קטגוריאלי אורדינלי</td><td>קטגוריות עם סדר</td><td>עונה, או דיסקרטיזציה של טמפרטורה ל"קר/נעים/חם"</td><td>גרף עמודות לפי הסדר</td></tr>
+<tr><td>מעגלי</td><td>הערך "מתגלגל" חזרה להתחלה</td><td>כיוון רוח, חודש בשנה</td><td>גרף קוטבי (rose), קידוד sin/cos</td></tr>
+</tbody></table></div>
+<div class="box warn"><b class="t">weather_code הוא מלכודת</b>הוא שמור כמספר שלם, אבל הוא קטגוריה. אם מודל יתייחס אליו כמספר, הוא "יחשוב" שקוד 61 קרוב לקוד 63 יותר מאשר ל-3. במקרה זה זה אולי נכון, אבל לא באופן עקבי. כדאי לקבץ את הקודים לקבוצות: בהיר / מעונן / ערפל / טפטוף / גשם / שלג / סופת רעמים.</div>
+
+<!-- ============================================================ -->
+<h2 id="leakage">6. דליפת מידע (Data Leakage)</h2>
+<p><strong>דליפה</strong> קורית כשבזמן האימון המודל רואה מידע שלא יהיה זמין לו בזמן חיזוי אמיתי. התוצאות נראות מצוין, והמודל נכשל במציאות.</p>
+<div class="box danger"><b class="t">הכלל המרכזי בפרויקט</b>"אין להשתמש במידע מהיום הבא כמאפיין." כל מאפיין חייב להיות ידוע <strong>עד סוף היום הנוכחי</strong>.</div>
+<div class="tbl"><table>
+<thead><tr><th>מאפיין</th><th>תקין?</th><th>למה</th></tr></thead>
+<tbody>
+<tr><td><code>precipitation_sum</code> של היום</td><td>✓</td><td>ידוע בסוף היום</td></tr>
+<tr><td>גשם אתמול (lag)</td><td>✓</td><td>מידע מהעבר</td></tr>
+<tr><td>ממוצע משקעים של 3 הימים האחרונים</td><td>✓</td><td>בתנאי שהחלון כולל רק את היום ולפניו</td></tr>
+<tr><td><code>precipitation_sum</code> של מחר</td><td>✗</td><td>זו התשובה עצמה</td></tr>
+<tr><td>ממוצע "מרוכז" של 3 ימים (אתמול, היום, מחר)</td><td>✗</td><td>כולל את מחר בלי שרואים את זה</td></tr>
+<tr><td>השלמת ערך חסר בממוצע של כל הנתונים, כולל העתיד</td><td>⚠</td><td>דליפה עדינה. עדיף להשלים רק ממידע של העבר</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="priors">7. הסתברויות אפריוריות ואיזון</h2>
+<p><strong>הסתברות אפריורית (Prior)</strong> היא ההסתברות של ערך <em>לפני</em> שמסתכלים על מידע אחר. למשל: P(RainTomorrow=1) = שיעור הימים הגשומים בכל הנתונים.</p>
+<pre><code>df["RainTomorrow"].value_counts(normalize=True)
+df.groupby("location")["RainTomorrow"].mean()   # לפי עיר</code></pre>
+<h3>Dataset מאוזן?</h3>
+<p>מאוזן = המחלקות בגודל דומה. בבעיה הזו צפוי בערך <strong>25%–40%</strong> ימים גשומים (תלוי בעיר), כלומר חוסר איזון מתון.</p>
+<div class="box why"><b class="t">למה זה חשוב</b>
+<ul style="margin:.2em 0">
+  <li><strong>Baseline:</strong> אם 70% מהימים יבשים, מודל שתמיד עונה "לא ירד גשם" כבר מגיע ל-70% דיוק (accuracy). כל מודל צריך לעשות יותר טוב מזה.</li>
+  <li>בחלק ב' זה ישפיע על בחירת המדדים (precision / recall / F1 / AUC במקום accuracy בלבד).</li>
+  <li>להשוות בין ערים: בוונקובר ולונדון יורד גשם הרבה יותר מאשר בסידני. זו בדיוק תובנה מהסוג שהמרצים מחפשים.</li>
+</ul></div>
+<h3>האם הנתונים מייצגים את המציאות?</h3>
+<p>נקודות לדיון: רק 6 ערים, כולן גדולות, ובמקומות מפותחים. 5 בחצי הכדור הצפוני ואחת בדרומי. אין ערים מדבריות או טרופיות. מקור הנתונים הוא מודל (reanalysis) ולא תחנה. ושינויי אקלים לאורך השנים עלולים להשפיע.</p>
+
+<!-- ============================================================ -->
+<h2 id="distributions">8. התפלגויות: PDF וגרף עמודות</h2>
+<p><strong>PDF (פונקציית צפיפות הסתברות):</strong> עקומה שמראה איפה הערכים של משתנה רציף מרוכזים. השטח מתחתיה הוא 1. בפועל מעריכים אותה עם <strong>KDE</strong> (Kernel Density Estimation), שהיא בעצם היסטוגרמה "מוחלקת".</p>
+<pre><code>import seaborn as sns
+sns.kdeplot(data=df, x="temperature_2m_mean", hue="location", common_norm=False)
+sns.countplot(data=df, x="weather_group")        # משתנה קטגוריאלי</code></pre>
+<p>מה מחפשים בגרף:</p>
+<ul>
+  <li><strong>צורה:</strong> פעמון (נורמלי), מוטה (skewed) או דו-שיאי (bimodal). לטמפרטורה יש לרוב שני שיאים בגלל קיץ וחורף.</li>
+  <li><strong>הטיה:</strong> משקעים מוטים חזק ימינה: רוב הימים 0, ומעט ימים עם הרבה גשם. ייתכן שכדאי טרנספורמציה, למשל <code>log1p</code>.</li>
+  <li><strong>חריגים (Outliers):</strong> ערכים רחוקים מאוד מהשאר. צריך לבדוק אם הם אמיתיים או שגיאה.</li>
+  <li><strong>התפלגות מותנית:</strong> אותו גרף בנפרד ל-<code>RainTomorrow=0</code> ול-<code>=1</code>. אם העקומות שונות, המשתנה כנראה עוזר לחזות.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="relations">9. קשרים בין משתנים</h2>
+<h3>מתאם (Correlation)</h3>
+<ul>
+  <li><strong>Pearson:</strong> מודד קשר <em>לינארי</em>. בין −1 ל-1.</li>
+  <li><strong>Spearman:</strong> מודד קשר <em>מונוטוני</em> (לפי דירוג). עמיד יותר לחריגים ולהתפלגויות מוטות כמו משקעים.</li>
+  <li>מתאם ≠ סיבתיות. מתאם 0 לא אומר שאין קשר, רק שאין קשר לינארי.</li>
+</ul>
+<pre><code>corr = df[numeric_cols].corr(method="spearman")
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="RdBu_r", vmin=-1, vmax=1)</code></pre>
+<h3>Multicollinearity: משתנים "כפולים"</h3>
+<p>כשכמה משתנים מתארים כמעט אותו דבר. בפרויקט זה צפוי ב:</p>
+<ul>
+  <li>4 משתני הטמפרטורה (max, min, mean, apparent): מתאם של כ-0.9 ומעלה.</li>
+  <li><code>precipitation_sum</code> ו-<code>rain_sum</code>: כמעט זהים, חוץ מבימי שלג.</li>
+</ul>
+<p>זו הדוגמה בדיוק מההנחיות: "מתאם גבוה ← אותה תופעה ← נמחק אחד ← מודל פשוט יותר".</p>
+<h3>רעיונות לקשרים "מעניינים"</h3>
+<div class="tbl"><table>
+<thead><tr><th>קשר</th><th>צפוי?</th><th>איך לבדוק</th></tr></thead>
+<tbody>
+<tr><td>גשם היום ← גשם מחר (התמדה)</td><td>צפוי</td><td>טבלת שכיחויות: P(RainTomorrow=1 | גשם היום) לעומת P(RainTomorrow=1 | יבש היום)</td></tr>
+<tr><td>כיוון רוח ← גשם מחר, בכל עיר בנפרד</td><td>מעניין</td><td>גרף קוטבי של שיעור הגשם לפי כיוון. בלונדון רוח מערבית מהאטלנטי מביאה גשם</td></tr>
+<tr><td>עונה ← גשם, הפוך בסידני</td><td>מעניין</td><td>שיעור גשם לפי חודש × עיר</td></tr>
+<tr><td>הפרש טמפרטורה (max − min) ← גשם</td><td>פחות צפוי</td><td>boxplot לפי מחלקה. ימים מעוננים הם עם הפרש קטן</td></tr>
+<tr><td>טמפרטורה מורגשת לעומת טמפרטורה ממוצעת: ההפרש לפי עיר</td><td>לא צפוי</td><td>פיזור (scatter) של שתיהן</td></tr>
+</tbody></table></div>
+
+<!-- ============================================================ -->
+<h2 id="quality">10. איכות נתונים</h2>
+<h3>ערכים חסרים</h3>
+<pre><code>df.isna().sum()                       # כמה חסרים בכל עמודה
+df.groupby("location").size()         # האם יש ימים חסרים לגמרי?
+pd.date_range(start, end).difference(dates)   # אילו תאריכים חסרים</code></pre>
+<p>שלושה סוגי חוסרים (כדאי להזכיר בדו"ח):</p>
+<ul>
+  <li><strong>MCAR:</strong> חסר באופן אקראי לחלוטין</li>
+  <li><strong>MAR:</strong> החוסר תלוי במשתנים אחרים שנמדדו (למשל רק בעיר מסוימת)</li>
+  <li><strong>MNAR:</strong> החוסר תלוי בערך עצמו (למשל חיישן שנכשל דווקא בסערה)</li>
+</ul>
+<p>אפשרויות טיפול: השמטה (כשיש מעט חסרים), השלמה בממוצע או חציון, או השלמה מתוך הזמן (interpolation בתוך אותה עיר), שהיא הגיונית לנתוני מזג אוויר.</p>
+
+<h3>בדיקות היגיון</h3>
+<div class="tbl"><table>
+<thead><tr><th>בדיקה</th><th>קוד</th></tr></thead>
+<tbody>
+<tr><td>מינימום גבוה מהמקסימום</td><td><code>df[df.temperature_2m_min &gt; df.temperature_2m_max]</code></td></tr>
+<tr><td>ממוצע מחוץ לטווח min–max</td><td><code>~df.temperature_2m_mean.between(df.temperature_2m_min, df.temperature_2m_max)</code></td></tr>
+<tr><td>משקעים שליליים</td><td><code>df[df.precipitation_sum &lt; 0]</code></td></tr>
+<tr><td>גשם גדול מסך המשקעים</td><td><code>df[df.rain_sum &gt; df.precipitation_sum]</code></td></tr>
+<tr><td>שעות משקעים מחוץ ל-0..24</td><td><code>~df.precipitation_hours.between(0, 24)</code></td></tr>
+<tr><td>משקעים > 0 אבל 0 שעות משקעים (או להפך)</td><td><code>(df.precipitation_sum &gt; 0) &amp; (df.precipitation_hours == 0)</code></td></tr>
+<tr><td>כיוון רוח מחוץ ל-0..360</td><td><code>~df.wind_direction_10m_dominant.between(0, 360)</code></td></tr>
+<tr><td>weather_code של גשם, אבל 0 משקעים</td><td>טבלת שכיחויות של קוד מול משקעים > 0</td></tr>
+</tbody></table></div>
+<div class="box ok"><b class="t">אם הכול תקין</b>זו גם תוצאה. כותבים "בדקנו X, Y, Z ולא נמצאו חריגות, כנראה משום שמקור הנתונים הוא מודל ולא חיישן". ההנחיות מתירות במפורש להסביר למה שאלה מסוימת לא רלוונטית.</div>
+
+<!-- ============================================================ -->
+<h2 id="selection">11. בחירת מאפיינים (Feature Selection)</h2>
+<p>המטרה: מודל פשוט יותר, פחות רעש, פחות סיכון ל-<strong>Overfitting</strong> (מודל ש"משנן" את האימון ולא מכליל).</p>
+<ul>
+  <li><strong>כפילות:</strong> מתאם גבוה מאוד בין שני מאפיינים, ולכן משאירים אחד.</li>
+  <li><strong>שונות נמוכה:</strong> מאפיין שכמעט קבוע (למשל <code>snowfall_sum</code> בסידני) לא תורם.</li>
+  <li><strong>קשר חלש למטרה:</strong> מתאם עם המטרה, או <strong>Mutual Information</strong>, שתופס גם קשרים לא לינאריים.</li>
+  <li><strong>איכות נמוכה:</strong> הרבה חסרים או שגיאות.</li>
+  <li><strong>עמודות שאינן מאפיינים:</strong> <code>date</code> המלא לא מאפיין (המודל לא יראה שוב את 2015). גוזרים ממנו חודש או עונה.</li>
+</ul>
+<pre><code>from sklearn.feature_selection import mutual_info_classif
+mi = mutual_info_classif(X, y, random_state=42)</code></pre>
+<div class="box warn"><b class="t">לא למחוק בלי לבדוק</b>ההנחיות דורשות: "אם אתם מניחים שאפשר להסיר, בדקו את ההנחה". תמיד עם גרף או מספר.</div>
+
+<!-- ============================================================ -->
+<h2 id="discretization">12. דיסקרטיזציה</h2>
+<p>הפיכת משתנה רציף לקטגוריות ("סלים", bins).</p>
+<div class="tbl"><table>
+<thead><tr><th>שיטה</th><th>איך</th><th>דוגמה</th></tr></thead>
+<tbody>
+<tr><td>רוחב שווה</td><td>טווחים בגודל זהה</td><td><code>pd.cut(x, bins=5)</code></td></tr>
+<tr><td>תדירות שווה</td><td>אותו מספר דוגמאות בכל סל (לפי אחוזונים)</td><td><code>pd.qcut(x, q=4)</code></td></tr>
+<tr><td>לפי ידע מהתחום</td><td>ספים עם משמעות</td><td>רוח לפי סולם בופור; משקעים: 0 / &lt;1 / 1–10 / &gt;10 מ"מ</td></tr>
+</tbody></table></div>
+<pre><code>df["rain_today_cat"] = pd.cut(df.precipitation_sum,
+    bins=[-0.01, 0, 1, 10, np.inf],
+    labels=["dry", "trace", "moderate", "heavy"])
+df["wind_dir_8"] = pd.cut(df.wind_direction_10m_dominant % 360,
+    bins=np.arange(-22.5, 360, 45) ...)   # N, NE, E, ...</code></pre>
+<p>מתי זה עוזר: כשהקשר לא לינארי, כשרוצים להפחית רעש, או לגרפים קריאים יותר. המחיר: מאבדים מידע בתוך כל סל.</p>
+
+<!-- ============================================================ -->
+<h2 id="engineering">13. גזירת מאפיינים (Feature Engineering)</h2>
+<p>יצירת מאפיינים חדשים מהקיימים. כאן נמצאת ההזדמנות הגדולה לבונוס.</p>
+<div class="tbl"><table>
+<thead><tr><th>מאפיין</th><th>חישוב</th><th>למה הוא אמור לעזור</th></tr></thead>
+<tbody>
+<tr><td><code>rain_today</code></td><td><code>precipitation_sum &gt;= 1.0</code></td><td>התמדת מזג אוויר: גשם היום מעלה סיכוי לגשם מחר</td></tr>
+<tr><td><code>temp_range</code></td><td><code>max - min</code></td><td>עננות מקטינה את ההפרש היומי</td></tr>
+<tr><td><code>precip_lag1</code>, <code>rain_last_3d</code></td><td><code>groupby("location").shift(1)</code> / <code>rolling(3)</code></td><td>מגמה של כמה ימים (רק מהעבר!)</td></tr>
+<tr><td><code>temp_change</code></td><td>טמפרטורה היום − אתמול</td><td>חזית קרה מביאה ירידה חדה ולרוב גם גשם</td></tr>
+<tr><td><code>month_sin</code>, <code>month_cos</code></td><td><code>sin(2π·month/12)</code></td><td>עונתיות, כך שדצמבר וינואר יהיו "קרובים"</td></tr>
+<tr><td><code>season</code></td><td>לפי חודש <strong>והמיספרה</strong></td><td>ינואר הוא קיץ בסידני</td></tr>
+<tr><td><code>wind_u</code>, <code>wind_v</code></td><td><code>speed·sin(dir)</code>, <code>speed·cos(dir)</code></td><td>פותר את בעיית המעגליות של כיוון הרוח</td></tr>
+<tr><td><code>weather_group</code></td><td>קיבוץ קודי WMO</td><td>פחות קטגוריות, ויותר דוגמאות בכל אחת</td></tr>
+<tr><td><code>location</code> כ-One-Hot</td><td><code>pd.get_dummies</code></td><td>כל עיר מקבלת עמודת 0/1 משלה, בלי סדר מלאכותי</td></tr>
+</tbody></table></div>
+<div class="box danger"><b class="t">חשוב לחלק ב'</b>מאפייני lag ו-rolling צריכים ימים קודמים. בחלק ב' סט המבחן יגיע כ-JSON גולמי. אם הוא יכלול יום בודד, לא יהיה "אתמול". כדאי לשאול את המתרגלת כמה ימים כל דוגמת מבחן מכילה, ולכתוב את קוד העיבוד כפונקציה אחת שעובדת גם על נתוני אימון וגם על JSON חדש.</div>
+
+<!-- ============================================================ -->
+<h2 id="time">14. היבטי זמן ומבט לחלק ב'</h2>
+<ul>
+  <li><strong>הנתונים הם סדרה עתית.</strong> ימים סמוכים דומים זה לזה (autocorrelation), ולכן הדוגמאות אינן בלתי תלויות.</li>
+  <li><strong>חלוקה לאימון/בדיקה לפי זמן:</strong> חלוקה אקראית נותנת למודל "להציץ" בימים צמודים לימי הבדיקה, והתוצאה נראית טובה מדי. נכון יותר: לאמן על השנים המוקדמות ולבדוק על האחרונות. כך זה גם יהיה בבחינה האמיתית.</li>
+  <li><strong>Distribution shift:</strong> האקלים משתנה עם השנים. שווה לבדוק אם שיעור הגשם השתנה לאורך זמן, וזו גם תובנה טובה לבונוס.</li>
+  <li><strong>אל תתאימו שום דבר (ממוצעים להשלמה, ספי סלים) על כל הנתונים.</strong> בחלק ב' מתאימים רק על סט האימון. כבר עכשיו כדאי לבנות את הקוד כך.</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="report">15. איך לכתוב את הדו"ח</h2>
+<p>כל פעולה בדו"ח עוברת את אותה שרשרת, כמו בדוגמה בהנחיות:</p>
+<div class="chain"><span>למה עשינו</span><i>←</i><span>מה התקבל</span><i>←</i><span>מה למדנו</span><i>←</i><span>מה ההשלכה להמשך</span></div>
+<div class="card">
+<strong>דוגמה:</strong> חשדנו ש-<code>rain_sum</code> ו-<code>precipitation_sum</code> מודדים כמעט אותו דבר ← חישבנו מתאם ← המתאם 0.99, וההבדל מופיע רק בימי שלג בברלין ובטוקיו ← שני המשתנים מתארים את אותה תופעה ← נשאיר את <code>precipitation_sum</code> (ממנו מוגדרת המטרה) ונגזור במקום זאת <code>snow_flag</code>.
+</div>
+<h3>מבנה מוצע ל-10 עמודים</h3>
+<div class="tbl"><table>
+<thead><tr><th>פרק</th><th>עמודים</th><th>ניקוד</th></tr></thead>
+<tbody>
+<tr><td>איסוף נתונים וחישה: החלטות, טווח תאריכים, טיפול בשגיאות</td><td>1.5</td><td>20</td></tr>
+<tr><td>הגדרת הבעיה</td><td>0.5–1</td><td>5</td></tr>
+<tr><td>הבנת הנתונים</td><td>4</td><td>35</td></tr>
+<tr><td>הכנת הנתונים</td><td>3</td><td>30</td></tr>
+<tr><td>סיכום: מה למדנו</td><td>0.5</td><td>-</td></tr>
+</tbody></table></div>
+<h3>גרף טוב</h3>
+<ul>
+  <li>כותרת שאומרת מה רואים, שמות צירים עם יחידות (°C, מ"מ), ומקרא.</li>
+  <li>גודל גופן קריא גם אחרי הדבקה ל-Word.</li>
+  <li>לא יותר מ-6–7 צבעים. צבע עקבי לכל עיר לאורך כל הדו"ח.</li>
+  <li>גרף בלי הסבר לא מקבל ניקוד (כתוב במפורש לגבי הבונוס).</li>
+</ul>
+
+<!-- ============================================================ -->
+<h2 id="pitfalls">16. מלכודות נפוצות</h2>
+<ul class="checks">
+  <li><input type="checkbox" id="p1"><label for="p1"><code>shift(-1)</code> בלי <code>groupby("location")</code>, ואז היום האחרון של לונדון "מקבל" את הגשם של ברלין</label></li>
+  <li><input type="checkbox" id="p2"><label for="p2">חורים בתאריכים, ואז "מחר" הוא בעצם עוד שבוע</label></li>
+  <li><input type="checkbox" id="p3"><label for="p3">מאפיין שמשתמש במידע של מחר (דליפה)</label></li>
+  <li><input type="checkbox" id="p4"><label for="p4">ממוצע של <code>weather_code</code> או של כיוון רוח, שאין להם משמעות</label></li>
+  <li><input type="checkbox" id="p5"><label for="p5">עונות לפי חצי הכדור הצפוני גם בסידני</label></li>
+  <li><input type="checkbox" id="p6"><label for="p6">בקשה ל-API מתוך <code>sensing.py</code></label></li>
+  <li><input type="checkbox" id="p7"><label for="p7">הורדת כל הנתונים מחדש בכל הרצה</label></li>
+  <li><input type="checkbox" id="p8"><label for="p8">מחברת שהוגשה בלי פלטים, או שלא רצה מההתחלה עד הסוף</label></li>
+  <li><input type="checkbox" id="p9"><label for="p9">שמות בעמוד השער, או דו"ח מעל 10 עמודים</label></li>
+  <li><input type="checkbox" id="p10"><label for="p10">קוד שטל לא יודעת להסביר שורה-שורה (יורדות נקודות על זה במפורש)</label></li>
+</ul>
+
+<footer>מבוסס על ההנחיות לחלק א' של הפרויקט בקורס למידת מכונה 364-1-1811. דברים שלא כתובים בהנחיות מסומנים כהמלצה. במקרה של סתירה, ההנחיות והמתרגלת קובעות.</footer>
+</div>
+
+<script>
+(function(){
+  var KEY = "rain-guide-checks";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".pipe .checks input[type=checkbox]"));
+  var all = document.querySelectorAll(".checks input[type=checkbox]");
+  function update(){
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    var pct = boxes.length ? Math.round(done * 100 / boxes.length) : 0;
+    document.getElementById("bar").style.width = pct + "%";
+    document.getElementById("progress-text").textContent = "הושלמו " + done + " מתוך " + boxes.length + " משימות (" + pct + "%)";
+  }
+  Array.prototype.forEach.call(all, function(b){
+    if (state[b.id]) b.checked = true;
+    b.addEventListener("change", function(){
+      state[b.id] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      update();
+    });
+  });
+  update();
+})();
+</script>
+</body>
+</html>

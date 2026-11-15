@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+__MACOSX/
+Thumbs.db
+desktop.ini
+
+# course material, not ours to publish (the repo is public)
+ML_Project_Part_A_Instructions.docx

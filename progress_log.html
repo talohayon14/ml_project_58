@@ -1,0 +1,252 @@
+<title>יומן התקדמות RainTomorrow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;700&display=swap">
+<style>
+/* Layout: one reading column, a "before / after" strip, then a dated timeline down the page. Same palette as the project overview. */
+:root{
+  --bg:#f6f5f1; --surface:#ffffff; --surface2:#efede7; --ink:#1c1d1f; --muted:#5d5c57;
+  --line:#e0ddd4; --accent:#1f5f8b; --accent-soft:#e2edf5;
+  --ok:#2d6a3e; --ok-soft:#e3f1e6; --warn:#995800; --warn-soft:#fbf0dc; --danger:#a33a2a; --danger-soft:#fae5e1;
+  --code-bg:#f1efe8;
+  --font-body:"Heebo","Segoe UI","Arial Hebrew",Arial,sans-serif;
+  --font-head:"Rubik","Heebo","Segoe UI",Arial,sans-serif;
+  --font-mono:Consolas,"Cascadia Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#15171a; --surface:#1e2125; --surface2:#262a2f; --ink:#ebeae5; --muted:#a4a19a;
+    --line:#33373d; --accent:#7fb6de; --accent-soft:#1c3041;
+    --ok:#88c99b; --ok-soft:#1a2f21; --warn:#e6b25e; --warn-soft:#382b15; --danger:#ef8b79; --danger-soft:#3a1f1a;
+    --code-bg:#1a1d21; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#15171a; --surface:#1e2125; --surface2:#262a2f; --ink:#ebeae5; --muted:#a4a19a;
+  --line:#33373d; --accent:#7fb6de; --accent-soft:#1c3041;
+  --ok:#88c99b; --ok-soft:#1a2f21; --warn:#e6b25e; --warn-soft:#382b15; --danger:#ef8b79; --danger-soft:#3a1f1a;
+  --code-bg:#1a1d21; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.7;direction:rtl}
+.wrap{max-width:900px;margin:0 auto;padding-block:32px 72px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--font-head);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:2rem}
+h2{font-size:1.35rem;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:1.05rem}
+p{margin:0;max-width:68ch}
+.kicker{color:var(--accent);font-weight:500;font-size:.9rem;letter-spacing:.02em}
+.lead{color:var(--muted);font-size:1.05rem}
+header{display:flex;flex-direction:column;gap:8px}
+section{display:flex;flex-direction:column;gap:14px}
+code{font-family:var(--font-mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+.note{border-inline-start:4px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:6px}
+.note.info{border-color:var(--accent);background:var(--accent-soft)}
+
+/* before / after */
+.compare{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.col{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.col h3{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.col .date{font-size:.85rem;color:var(--muted);font-weight:400;font-family:var(--font-body)}
+.col ul{margin:0;padding-inline-start:18px;display:flex;flex-direction:column;gap:2px}
+.meter{display:flex;flex-direction:column;gap:4px}
+.meter .track{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.meter .fill{height:100%;background:var(--ok)}
+.meter .lbl{font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* timeline */
+ol.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+ol.tl > li{position:relative;padding-inline-start:34px;padding-bottom:22px}
+ol.tl > li::before{content:"";position:absolute;inset-inline-start:7px;top:8px;width:12px;height:12px;border-radius:50%;
+  background:var(--surface);border:3px solid var(--accent)}
+ol.tl > li:not(:last-child)::after{content:"";position:absolute;inset-inline-start:12px;top:24px;bottom:0;width:2px;background:var(--line)}
+ol.tl > li.alert::before{border-color:var(--warn)}
+.ev{display:flex;flex-direction:column;gap:6px}
+.ev-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.time{font-family:var(--font-mono);font-size:.82rem;color:var(--muted);direction:ltr;unicode-bidi:isolate;font-variant-numeric:tabular-nums}
+.chip{font-size:.75rem;padding:1px 9px;border-radius:99px;white-space:nowrap;font-weight:500}
+.chip.done{background:var(--ok-soft);color:var(--ok)}
+.chip.wait{background:var(--warn-soft);color:var(--warn)}
+.chip.info{background:var(--accent-soft);color:var(--accent)}
+.ev ul{margin:0;padding-inline-start:18px}
+.ev p{color:var(--ink)}
+
+/* tables */
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:var(--surface);font-size:.94rem}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:start;vertical-align:top}
+th{background:var(--surface2);font-weight:500}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:12px}
+a{color:var(--accent)}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">למידת מכונה · פרויקט חלק א' · קבוצה 58</div>
+  <h1>יומן התקדמות: מאתמול להיום</h1>
+  <p class="lead">מה השתנה בפרויקט בין הערב של 14 בנובמבר לבין 15 בנובמבר 2026: מה נעשה, מה גילינו, ומה עדיין מחכה.</p>
+</header>
+
+<div class="note info"><b>מה המקור של היומן הזה.</b> הוא מבוסס על מה שנעשה בשיחה הזו עם Claude ועל זמני השינוי של הקבצים בתיקייה. עבודה שמישהו אחר עשה במחשב אחר מופיעה רק אם היא השאירה קבצים בתיקייה, וכזו יש אחת: התיקייה <code>report_figures</code>, שמתוארת בהמשך.</div>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-compare">
+  <h2 id="h-compare">אתמול לעומת היום</h2>
+  <div class="compare">
+    <div class="col">
+      <h3>אתמול <span class="date">14.11, בערב</span></h3>
+      <ul>
+        <li>איסוף הנתונים: 102 קובצי JSON</li>
+        <li><code>sensing.py</code> ו-<code>sensed_data.csv</code></li>
+        <li>משתנה המטרה במחברת (סעיף 2)</li>
+        <li>סעיפים 3–5 במחברת: TODO בלבד</li>
+        <li>סביבת הפייתון: הועתקה ממחשב אחר</li>
+        <li>אין Git ואין גיבוי חיצוני</li>
+      </ul>
+      <div class="meter"><div class="track"><div class="fill" style="width:20%"></div></div><span class="lbl">כ-20 מתוך 100 נקודות מוכנות</span></div>
+    </div>
+    <div class="col">
+      <h3>היום <span class="date">15.11</span></h3>
+      <ul>
+        <li>כל מה שהיה אתמול, ובנוסף:</li>
+        <li>סעיף 3 (EDA) כתוב במלואו: 3.1–3.7 ו-9 גרפים</li>
+        <li>פייתון 3.12.10 מותקן וסביבה חדשה עובדת</li>
+        <li>מקור הנתונים נבדק מול התיעוד הרשמי</li>
+        <li>שני מסמכי הסבר בעברית ב-Artifacts</li>
+        <li>Git מוגדר עם commit ראשון. הדחיפה ל-GitHub מחכה</li>
+      </ul>
+      <div class="meter"><div class="track"><div class="fill" style="width:40%"></div></div><span class="lbl">כ-40 מתוך 100 (הערכה, לפני בדיקה ודוח)</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-tl">
+  <h2 id="h-tl">מה נעשה, לפי הסדר</h2>
+  <p class="small" style="color:var(--muted)">שעות מופיעות רק כשהן ידועות מזמן השינוי של קובץ.</p>
+  <ol class="tl">
+
+    <li><div class="ev">
+      <div class="ev-head"><h3>העברת העבודה ל-Claude חדש</h3><span class="chip done">הושלם</span></div>
+      <p>קראתי את <code>HANDOFF.md</code> ובדקתי שהמצב בתיקייה תואם לו: 102 קובצי JSON, <code>final_dataset.csv</code>, ומחברת שבה סעיפים 1–2 גמורים. הכל התאים.</p>
+    </div></li>
+
+    <li><div class="ev">
+      <div class="ev-head"><h3>מסמכי הסבר בעברית</h3><span class="chip done">הושלם</span></div>
+      <p>נוצר <code>project_overview.html</code>, סקירה של כל הפרויקט עם מילון של כ-40 מושגים. נוסף לו גם המדריך המקורי של ה-Claude הקודם. שני המסמכים פורסמו כ-Artifacts פרטיים.</p>
+    </div></li>
+
+    <li><div class="ev">
+      <div class="ev-head"><h3>קריאה מלאה של קובץ ההנחיות</h3><span class="chip done">הושלם</span></div>
+      <p>חילצתי את הטקסט של <code>ML_Project_Part_A_Instructions.docx</code>, כדי שכל דרישה תיבדק מול הנוסח המקורי ולא מול סיכום שלו.</p>
+    </div></li>
+
+    <li class="alert"><div class="ev">
+      <div class="ev-head"><h3>תיקון סביבת העבודה</h3><span class="chip done">הושלם</span></div>
+      <p><b>הבעיה:</b> תיקיית <code>.venv</code> הועתקה דרך OneDrive ממחשב אחר והצביעה על פייתון שלא קיים במחשב הזה. בנוסף, פייתון לא היה מותקן כאן בכלל.</p>
+      <ul>
+        <li>הותקן Python 3.12.10 דרך winget. זו אותה גרסה שהסביבה המקורית נבנתה עליה.</li>
+        <li><code>.venv</code> נבנתה מחדש מ-<code>requirements.txt</code>, ו-<code>pip check</code> עבר בלי שגיאות.</li>
+        <li>המחברת רצה מתחילתה ועד סופה.</li>
+      </ul>
+    </div></li>
+
+    <li><div class="ev">
+      <div class="ev-head"><h3>סעיף 3: הבנת הנתונים (EDA)</h3><span class="time">15:07</span><span class="chip done">הקוד גמור</span></div>
+      <p>נוספו למחברת 33 תאים: קוד, 9 גרפים והסבר באנגלית אחרי כל גרף. כל גרף נבדק מול הטקסט שמסביר אותו, ו-8 ניסוחים תוקנו כדי להתאים למה שרואים בגרף בפועל.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>תת-סעיף</th><th>מה יש בו</th></tr></thead>
+        <tbody>
+          <tr><td>3.1</td><td>מקור הנתונים ומילון של 13 המשתנים</td></tr>
+          <tr><td>3.2</td><td>KDE לטמפרטורה, משקעים ורוח. גרפי עמודות לעיר ול-<code>weather_code</code></td></tr>
+          <tr><td>3.3</td><td>איזון (36:64), ייצוגיות, ואחוז הגשם לפי שנה</td></tr>
+          <tr><td>3.4</td><td>מפת מתאמי Spearman</td></tr>
+          <tr><td>3.5</td><td>4 קשרים: התמדת גשם, עונה × עיר, כיוון רוח (גרפים קוטביים), טווח טמפרטורה</td></tr>
+          <tr><td>3.6</td><td>אילו משתנים משפיעים על המטרה</td></tr>
+          <tr><td>3.7</td><td>אילו משתנים מיותרים, ובדיקה של ההנחה</td></tr>
+        </tbody>
+      </table></div>
+      <p>עמודות העזר לגרפים נמצאות בעותק נפרד בשם <code>eda</code>, ולכן <code>final_dataset.csv</code> נשאר בדיוק כפי שהיה, עם 13 עמודות. באותה שעה עודכן גם <code>HANDOFF.md</code>.</p>
+    </div></li>
+
+    <li><div class="ev">
+      <div class="ev-head"><h3>הסברים מפורטים נוספו לסקירה</h3><span class="time">16:58</span><span class="chip done">הושלם</span></div>
+      <p>לסקירה בעברית נוספו שלושה סעיפים: משתנה המטרה שלב אחרי שלב, כל תת-סעיף של ה-EDA עם הקוד שלו, ו"מה נכניס למודל". הסקירה פורסמה מחדש באותו קישור, כגרסה 2.</p>
+    </div></li>
+
+    <li class="alert"><div class="ev">
+      <div class="ev-head"><h3>תיקייה חדשה: <code>report_figures</code></h3><span class="time">17:32</span><span class="chip info">לא נוצרה בשיחה הזו</span></div>
+      <p>הופיעו שלושה קבצים: <code>fig_target_prior.png</code>, <code>fig_continuous_kde.png</code> ו-<code>fig_categorical_bars.png</code>. אלה העתקים ברזולוציה גבוהה (3372×868) של הגרפים מסעיפים 2 ו-3.2, כנראה כהכנה לדוח. הקוד שיצר אותם לא נמצא בתיקייה, והמחברת לא השתנתה מאז 15:07. כנראה שמישהו מהקבוצה יצר אותם במחשב אחר, והם סונכרנו לכאן דרך OneDrive.</p>
+    </div></li>
+
+    <li><div class="ev">
+      <div class="ev-head"><h3>בדיקת מקור הנתונים מול התיעוד</h3><span class="chip done">הושלם</span></div>
+      <p>נקראה התיעוד הרשמי של ה-Historical Weather API. מה שעולה ממנו:</p>
+      <ul>
+        <li>ברירת המחדל (Best Match) משלבת שלושה מודלים: ERA5 (כ-25 ק"מ), ERA5-Land (כ-11 ק"מ), ו-ECMWF IFS (9 ק"מ, מ-2017).</li>
+        <li>התצפיות שהמודלים משלבים מגיעות מתחנות, מטוסים, מצופים, מכ"מים ולוויינים.</li>
+        <li>הערכים היומיים הם סיכום פשוט של 24 ערכים שעתיים.</li>
+        <li>לפי התיעוד אי אפשר להעריך סופות רעמים בנתונים האלה. זה מסביר למה הקודים 95–99 לא מופיעים אצלנו.</li>
+      </ul>
+    </div></li>
+
+    <li class="alert"><div class="ev">
+      <div class="ev-head"><h3>Git ו-GitHub</h3><span class="time">18:06</span><span class="chip wait">ממתין לך</span></div>
+      <ul>
+        <li>הותקן Git 2.56 ונוצר repo מקומי על הענף <code>main</code>. ה-commits נרשמים עם המייל המוסתר של GitHub.</li>
+        <li>ל-<code>.gitignore</code> נוסף <code>desktop.ini</code>.</li>
+        <li>נוסף <code>.gitattributes</code>, כדי ש-Git לא ישנה סימני סוף-שורה בתיקייה <code>data/</code>. כך קובצי ה-JSON נשארים בדיוק כפי שהתקבלו.</li>
+        <li>commit ראשון, <code>c37ae0d</code>, עם 122 קבצים.</li>
+        <li><b>עוד לא נדחף:</b> ה-repo ב-GitHub עדיין ציבורי. צריך לשנות אותו לפרטי, ואז הדחיפה תפתח חלון התחברות של GitHub.</li>
+      </ul>
+    </div></li>
+
+  </ol>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-find">
+  <h2 id="h-find">ממצאים חדשים מהיום</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>ממצא</th><th>מספרים</th><th>ההשלכה</th></tr></thead>
+    <tbody>
+      <tr><td>גשם היום מנבא גשם מחר</td><td class="num">55.7% לעומת 25.2%</td><td>המאפיין <code>rain_today</code></td></tr>
+      <tr><td>לכל עיר עונה גשומה אחרת</td><td class="num">ונקובר 64% בדצמבר, טוקיו 16% בינואר</td><td>חודש יחד עם עיר, ועונה לפי חצי כדור</td></tr>
+      <tr><td>כיוון הרוח שמביא גשם שונה בכל עיר</td><td class="num">ונקובר: מזרח 72%, מערב 22%</td><td>קידוד מעגלי של הרוח, יחד עם העיר</td></tr>
+      <tr><td><code>weather_code</code> בונה "מדרגות"</td><td class="num">5% אחרי יום בהיר, עד 62% אחרי שלג כבד</td><td>קיבוץ הקודים לפי סוג ועוצמה</td></tr>
+      <tr><td>שעות משקעים הן המשתנה החזק ביותר</td><td class="num">חציון 5 לעומת 0 שעות</td><td>להשאיר אותו</td></tr>
+      <tr><td>טווח הטמפרטורה קטן יותר לפני גשם</td><td class="num">6.5° לעומת 7.9°</td><td>המאפיין <code>temp_range</code></td></tr>
+      <tr><td>הטמפרטורות כפולות</td><td class="num">מתאם 0.92–0.99</td><td>להשאיר אחת</td></tr>
+      <tr><td><code>rain_sum</code> שונה רק בימי שלג</td><td class="num">רק בקודים 71, 73, 75</td><td>להסיר, ולגזור דגל שלג</td></tr>
+      <tr><td>היום הכי גשום</td><td class="num">ניו יורק, 4.10.2022, ‏183.6 מ"מ</td><td>לבדוק בסעיף 4</td></tr>
+      <tr><td>מודל אחר מ-2017 (Best Match)</td><td class="num">25/11 ק"מ ← 9 ק"מ</td><td>לבדוק בסעיף 4 אם יש קפיצה</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============================================================ -->
+<section aria-labelledby="h-next">
+  <h2 id="h-next">מה עדיין מחכה</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>משימה</th><th>מי</th><th>מצב</th></tr></thead>
+    <tbody>
+      <tr><td>לשנות את ה-repo לפרטי, ואז לדחוף</td><td>את, ואחר כך Claude</td><td><span class="chip wait">ממתין לך</span></td></tr>
+      <tr><td>להחליט אם <code>report_figures</code> נשאר ב-repo</td><td>את</td><td><span class="chip wait">פתוח</span></td></tr>
+      <tr><td>לעבור על הקוד של סעיף 3 עד שכל שורה ברורה</td><td>את</td><td><span class="chip wait">פתוח</span></td></tr>
+      <tr><td>לאמת את ההסבר לרוח המזרחית בוונקובר</td><td>את או Claude</td><td><span class="chip wait">פתוח</span></td></tr>
+      <tr><td>לשאול את המתרגל את שתי השאלות הפתוחות</td><td>את</td><td><span class="chip wait">פתוח</span></td></tr>
+      <tr><td>סעיף 4 במחברת: איכות נתונים</td><td>Claude, איתך</td><td><span class="chip info">הבא בתור</span></td></tr>
+      <tr><td>סעיף 5 במחברת: הכנת נתונים</td><td>Claude, איתך</td><td><span class="chip info">אחרי סעיף 4</span></td></tr>
+      <tr><td>הגדרת הבעיה, הדוח ב-PDF וה-ZIP</td><td>הקבוצה</td><td><span class="chip info">בסוף</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>קבוצה 58 · נכתב ב-15 בנובמבר 2026. מספרים מתוך <code>final_dataset.csv</code> והמחברת <code>dataset_creation.ipynb</code>.</footer>
+</div>
