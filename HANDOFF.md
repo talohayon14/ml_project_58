@@ -6,7 +6,10 @@ with the ML concepts and the full work plan is in `project_guide.html` (open it 
 
 ## Rules we are following
 
-- Python only. No git in this folder; the submission is a ZIP named `Group_58.zip`.
+- Python only. The submission is a ZIP named `Group_58.zip`.
+- Git: public repo https://github.com/talohayon14/ml_project_58 (branch `main`, pushed 2026-11-15). Commits use
+  talohayon14@users.noreply.github.com. The course instructions docx is git-ignored (not ours to publish).
+  `.gitattributes` keeps `data/` byte-for-byte (no line-ending conversion). The notebook merges badly: one person edits it at a time, pull first.
 - `sensing.py` must never call the API. Only `data_collection.py` talks to Open-Meteo.
 - Raw JSON files in `data/raw/` are stored exactly as received and never edited.
 - No information from the next day may be used as a feature (RainTomorrow is built from it, that's all).
