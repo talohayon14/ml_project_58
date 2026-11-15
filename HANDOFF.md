@@ -27,8 +27,8 @@ with the ML concepts and the full work plan is in `project_guide.html` (open it 
 | 3. Target | `dataset_creation.ipynb` sections 1-2 -> `data/processed/final_dataset.csv` | done: 36,924 rows x 13 cols |
 | 4. Problem definition (report text) | - | not started |
 | 5. EDA | notebook section 3 (3.1-3.7) | done 2026-11-15: dictionary, KDE/bar plots, balance, Spearman heatmap, 4 relations (persistence, month x city, wind direction polar, temp range), target-related features, redundancy check. Helper columns live in `eda`, `df` is unchanged |
-| 6. Data quality | notebook section 4 | not started |
-| 7. Data preparation | notebook section 5 | not started |
+| 6. Data quality | notebook section 4 (4.1-4.5) | done 2026-11-15: no missing/duplicates; 10 sanity checks (1 mean<min row, 70 light-snow 0 mm rows, both rounding); extremes kept; model breaks found (wind jumps Jan 2017 and end of 2024) |
+| 7. Data preparation | notebook section 5 (5.1-5.6) | done 2026-11-15: `make_features(days)` + `json_to_days(payload, location)` + `FEATURES_TO_DROP`; single-day features only, nothing fitted; final_dataset.csv = 36,924 x 34 (2 ids, 31 features, target). Wind speed dropped (unstable across models), feels_minus_actual dropped (MI ~0) |
 | 8. Report (PDF) | - | not started |
 | 9. Reproducibility check + ZIP | - | not started |
 
