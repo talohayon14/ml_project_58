@@ -1,0 +1,1226 @@
+<title>הכנה להגנה RainTomorrow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;600;700&display=swap">
+<style>
+/* Layout: a course. A "ladder" of 9 levels (0-8) on top acts as the navigation and progress bar; each level is its own view
+   (hash routing) with goals, lesson blocks, code, a defense sentence, a quiz and a self-check. Same palette as the other project pages. */
+:root{
+  --bg:#f5f4f0; --surface:#ffffff; --surface2:#eeece6; --ink:#1b1c1e; --muted:#5c5b56;
+  --line:#dedbd2; --accent:#1f5f8b; --accent-soft:#e1ecf5; --accent-ink:#ffffff;
+  --ok:#2d6a3e; --ok-soft:#e2f0e5; --warn:#975700; --warn-soft:#faefd9; --bad:#a33a2a; --bad-soft:#f9e3df;
+  --code-bg:#f0eee7; --rung:#d4d1c8;
+  --font-body:"Heebo","Segoe UI","Arial Hebrew",Arial,sans-serif;
+  --font-head:"Rubik","Heebo","Segoe UI",Arial,sans-serif;
+  --font-mono:Consolas,"Cascadia Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141619; --surface:#1d2024; --surface2:#25292e; --ink:#ecebe6; --muted:#a5a29b;
+    --line:#33373d; --accent:#82b8df; --accent-soft:#1b2f40; --accent-ink:#0f1a24;
+    --ok:#89ca9c; --ok-soft:#192e20; --warn:#e7b35f; --warn-soft:#372a14; --bad:#ef8c7a; --bad-soft:#391f1a;
+    --code-bg:#191c20; --rung:#3a3e45; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141619; --surface:#1d2024; --surface2:#25292e; --ink:#ecebe6; --muted:#a5a29b;
+  --line:#33373d; --accent:#82b8df; --accent-soft:#1b2f40; --accent-ink:#0f1a24;
+  --ok:#89ca9c; --ok-soft:#192e20; --warn:#e7b35f; --warn-soft:#372a14; --bad:#ef8c7a; --bad-soft:#391f1a;
+  --code-bg:#191c20; --rung:#3a3e45; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16.5px;line-height:1.75;direction:rtl}
+.wrap{max-width:940px;margin:0 auto;padding-block:26px 90px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex;flex-direction:column;gap:22px}
+h1,h2,h3,h4{font-family:var(--font-head);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:2.1rem}
+h2{font-size:1.55rem}
+h3{font-size:1.15rem;margin-top:6px}
+h4{font-size:1rem}
+p{margin:0;max-width:70ch}
+ul,ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:4px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--font-mono);font-size:.85em;background:var(--code-bg);padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;direction:ltr;text-align:left;line-height:1.55}
+pre code{background:none;padding:0;font-size:.84rem}
+.muted{color:var(--muted)}
+.small{font-size:.88rem}
+.kicker{color:var(--accent);font-weight:600;font-size:.88rem;letter-spacing:.03em}
+
+/* top header */
+.top{display:flex;flex-direction:column;gap:6px}
+
+/* the ladder */
+.ladder{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;align-items:end}
+.rung{display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:var(--muted);font-size:.74rem;text-align:center;min-width:0}
+.rung .step{width:100%;border-radius:6px 6px 2px 2px;background:var(--rung);display:grid;place-items:center;
+  font-family:var(--font-head);font-weight:700;color:var(--ink);font-size:1rem;transition:background .2s}
+.rung:nth-child(1) .step{height:30px}.rung:nth-child(2) .step{height:36px}.rung:nth-child(3) .step{height:42px}
+.rung:nth-child(4) .step{height:48px}.rung:nth-child(5) .step{height:54px}.rung:nth-child(6) .step{height:60px}
+.rung:nth-child(7) .step{height:66px}.rung:nth-child(8) .step{height:72px}.rung:nth-child(9) .step{height:78px}
+.rung.done .step{background:var(--ok);color:var(--surface)}
+.rung.current .step{background:var(--accent);color:var(--accent-ink)}
+.rung .nm{line-height:1.2;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media (max-width:560px){.rung .nm{display:none}}
+.subnav{display:flex;flex-wrap:wrap;gap:8px}
+.pill{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:99px;padding:3px 12px;text-decoration:none;cursor:pointer}
+.pill:hover{border-color:var(--accent)}
+.pill.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+/* views */
+.view{display:flex;flex-direction:column;gap:18px}
+.lvl-head{display:flex;flex-direction:column;gap:6px;padding-bottom:12px;border-bottom:2px solid var(--line)}
+.lvl-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:.85rem;color:var(--muted)}
+.lvl-meta span{background:var(--surface2);border-radius:99px;padding:1px 10px}
+.goals{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.goals h4{color:var(--accent)}
+
+.block{display:flex;flex-direction:column;gap:10px}
+.box{border-radius:8px;padding:11px 15px;border-inline-start:4px solid;display:flex;flex-direction:column;gap:6px}
+.box.idea{background:var(--accent-soft);border-color:var(--accent)}
+.box.ours{background:var(--surface);border:1px solid var(--line);border-inline-start:4px solid var(--ok)}
+.box.trap{background:var(--warn-soft);border-color:var(--warn)}
+.box .t{font-weight:700;font-size:.92rem}
+.say{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;position:relative}
+.say .t{font-family:var(--font-head);font-weight:600;color:var(--accent);font-size:.9rem;margin-bottom:4px;display:block}
+.say p{font-size:1.02rem}
+
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:var(--surface);font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:start;vertical-align:top}
+th{background:var(--surface2);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* quiz */
+.quiz{display:flex;flex-direction:column;gap:12px}
+.quiz-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.score{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.9rem}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 15px;display:flex;flex-direction:column;gap:8px}
+.q .qt{font-weight:600}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{font:inherit;text-align:start;background:var(--surface2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer;line-height:1.5}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.expl{font-size:.92rem;border-inline-start:3px solid var(--accent);padding-inline-start:10px}
+
+/* self check */
+.check{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.check label{display:flex;gap:9px;align-items:flex-start;cursor:pointer}
+.check input{width:17px;height:17px;margin-top:6px;flex:none;accent-color:var(--ok)}
+
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line)}
+.btn{font:inherit;background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:7px 16px;cursor:pointer;text-decoration:none;font-weight:500}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn:hover{filter:brightness(1.07)}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:720px){.hero{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:.9rem;display:flex;flex-direction:column;gap:2px}
+.day b{font-family:var(--font-head)}
+.day .d{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.method .card h4{color:var(--accent)}
+
+/* mock defense */
+details.mq{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 15px}
+details.mq summary{cursor:pointer;font-weight:600;list-style-position:inside}
+details.mq[open]{border-color:var(--accent)}
+details.mq .ans{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.tag{display:inline-block;font-size:.72rem;font-weight:600;border-radius:99px;padding:0 8px;margin-inline-start:6px;vertical-align:middle}
+.tag.e{background:var(--ok-soft);color:var(--ok)}
+.tag.m{background:var(--warn-soft);color:var(--warn)}
+.tag.h{background:var(--bad-soft);color:var(--bad)}
+.timer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.timer .clock{font-family:var(--font-mono);font-size:1.8rem;font-variant-numeric:tabular-nums;min-width:4.5ch;direction:ltr}
+
+/* flashcards */
+.fc{background:var(--surface);border:2px solid var(--accent);border-radius:14px;min-height:170px;padding:22px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;text-align:center;cursor:pointer}
+.fc .side{font-size:.78rem;color:var(--muted);letter-spacing:.05em}
+.fc .txt{font-family:var(--font-head);font-size:1.25rem;line-height:1.4}
+.fc.back{background:var(--accent-soft)}
+.fc-bar{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">למידת מכונה · פרויקט חלק א' · קבוצה 58</div>
+  <h1>הכנה להגנה: מרמה 0 עד מומחית</h1>
+</header>
+
+<nav class="ladder" id="ladder" aria-label="רמות הקורס">
+  <a class="rung" href="#l0"><span class="step">0</span><span class="nm">התמונה הגדולה</span></a>
+  <a class="rung" href="#l1"><span class="step">1</span><span class="nm">הנתונים</span></a>
+  <a class="rung" href="#l2"><span class="step">2</span><span class="nm">איסוף וחישה</span></a>
+  <a class="rung" href="#l3"><span class="step">3</span><span class="nm">המטרה ודליפה</span></a>
+  <a class="rung" href="#l4"><span class="step">4</span><span class="nm">הבנת הנתונים</span></a>
+  <a class="rung" href="#l5"><span class="step">5</span><span class="nm">איכות</span></a>
+  <a class="rung" href="#l6"><span class="step">6</span><span class="nm">הכנה</span></a>
+  <a class="rung" href="#l7"><span class="step">7</span><span class="nm">חשיבה ביקורתית</span></a>
+  <a class="rung" href="#l8"><span class="step">8</span><span class="nm">סימולציית הגנה</span></a>
+</nav>
+<div class="subnav">
+  <a class="pill" href="#home" data-nav="home">מבוא ותוכנית לימוד</a>
+  <a class="pill" href="#cards" data-nav="cards">כרטיסיות מספרים</a>
+  <span class="small muted" id="progress-line"></span>
+</div>
+
+<!-- ================================================================= HOME -->
+<section class="view" id="v-home" data-view="home">
+  <div class="hero">
+    <div class="card">
+      <h2>טל, ככה עובד הקורס</h2>
+      <p>תשע רמות, מ"מה זה בכלל ML" ועד שאלות קשות של בוחן. כל רמה בנויה על הקודמת, ולכן כדאי ללכת לפי הסדר.</p>
+      <p>בכל רמה יש: <b>מטרות</b> (מה תדעי בסוף), <b>שיעור</b> עם דוגמאות מהפרויקט שלנו, <b>הקוד</b> עם הסבר, <b>"משפט להגנה"</b> שאפשר להגיד כמו שהוא, <b>בוחן</b> עם הסבר לכל תשובה, ו<b>בדיקה עצמית</b>. רמה נצבעת בירוק כשמסמנים את כל הבדיקה העצמית שלה.</p>
+      <p class="small muted">הסימונים והציונים נשמרים רק בדפדפן הזה.</p>
+      <div><a class="btn" href="#l0">להתחיל ברמה 0</a></div>
+    </div>
+    <div class="card">
+      <h3>מה בוחנים בהגנה</h3>
+      <ul>
+        <li><b>שאת מבינה כל שורה.</b> ההנחיות אומרות במפורש שסימן לחוסר הבנה מוריד נקודות.</li>
+        <li><b>למה</b> עשיתם כל דבר, ולא רק <b>מה</b>.</li>
+        <li><b>מה למדתם</b> מכל תוצאה, ומה <b>ההשלכה</b> לשלב הבא.</li>
+        <li>שאת יודעת את <b>המגבלות</b> של העבודה.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>שיטת הלימוד</h2>
+  <div class="method">
+    <div class="card"><h4>1. להסביר בקול</h4><p class="small">אחרי כל רמה, להסביר אותה בקול בלי להסתכל, כאילו מישהו שואל אותך. אם נתקעת, חזרי לנקודה שנתקעת בה.</p></div>
+    <div class="card"><h4>2. לפתוח את הקוד</h4><p class="small">לכל רמה, לפתוח את התאים המתאימים ב-<code>dataset_creation.ipynb</code> ב-Cursor ולעבור שורה אחרי שורה.</p></div>
+    <div class="card"><h4>3. לשנות ולראות</h4><p class="small">ההבנה הכי עמוקה מגיעה מניסוי: לשנות סף או להוריד <code>groupby</code> ולראות מה נשבר. בלי לשמור את השינוי.</p></div>
+    <div class="card"><h4>4. חזרה מרווחת</h4><p class="small">כרטיסיות המספרים כל יום 5 דקות. מספרים נשכחים מהר, ובהגנה הם מראים שאת מכירה את הנתונים.</p></div>
+  </div>
+
+  <h2>תוכנית ל-14 יום (עד ההגנה)</h2>
+  <div class="plan">
+    <div class="day"><span class="d">יום 1</span><b>רמה 0 + רמה 1</b>מה הפרויקט, ומה בנתונים.</div>
+    <div class="day"><span class="d">יום 2</span><b>רמה 2</b>הקוד של האיסוף והחישה, שורה אחרי שורה.</div>
+    <div class="day"><span class="d">יום 3</span><b>רמה 3</b>משתנה המטרה ודליפת מידע. רמה קריטית.</div>
+    <div class="day"><span class="d">יום 4</span><b>רמה 4, חלק א'</b>התפלגויות ומתאמים.</div>
+    <div class="day"><span class="d">יום 5</span><b>רמה 4, חלק ב'</b>ארבעת הקשרים והגרפים.</div>
+    <div class="day"><span class="d">יום 6</span><b>רמה 5</b>איכות הנתונים והחלפות המודל.</div>
+    <div class="day"><span class="d">יום 7</span><b>חזרה</b>בוחנים של רמות 0–5 שוב, ונקודות חלשות.</div>
+    <div class="day"><span class="d">יום 8</span><b>רמה 6, חלק א'</b>בחירת מאפיינים ודיסקרטיזציה.</div>
+    <div class="day"><span class="d">יום 9</span><b>רמה 6, חלק ב'</b>הפונקציה <code>make_features</code>.</div>
+    <div class="day"><span class="d">יום 10</span><b>רמה 7</b>מגבלות, וחיבור לחלק ב'.</div>
+    <div class="day"><span class="d">יום 11</span><b>רמה 8</b>נאום של 2 דקות, להקליט את עצמך.</div>
+    <div class="day"><span class="d">יום 12</span><b>סימולציה 1</b>שהשותף ישאל אותך 15 שאלות מרמה 8.</div>
+    <div class="day"><span class="d">יום 13</span><b>סימולציה 2</b>רק השאלות הקשות, וכל מה שנתקעת בו.</div>
+    <div class="day"><span class="d">יום 14</span><b>מנוחה</b>כרטיסיות בלבד, ושינה טובה.</div>
+  </div>
+</section>
+
+<!-- ================================================================= L0 -->
+<section class="view" id="v-l0" data-view="l0" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 0</div>
+    <h2>התמונה הגדולה: מה בכלל עשינו?</h2>
+    <div class="lvl-meta"><span>כ-45 דקות</span><span>בלי קוד</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>להסביר את הפרויקט ב-30 שניות.</li>
+    <li>מה זה למידה מונחית, סיווג בינארי, מאפיין ומשתנה מטרה.</li>
+    <li>מה זה baseline, ומה ה-baseline שלנו.</li>
+    <li>מה בדיוק חלק א', ומה <b>לא</b> בו.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>הסיפור בשלוש שורות</h3>
+    <p>רצינו לבנות מערכת שמסתכלת על מזג האוויר של <b>היום</b> בעיר מסוימת ועונה: <b>האם מחר ירד לפחות 1 מ"מ גשם?</b> בחלק א' לא בנינו מודל. בנינו את <b>הנתונים</b> שהמודל ילמד מהם: אספנו, ניקינו, הבנו והכנו. בחלק ב' מאמנים מודלים.</p>
+    <div class="box idea"><span class="t">אנלוגיה</span><p>תחשבי על חזאי מתלמד. נותנים לו 36,924 דפים, ובכל דף כתוב איך נראה יום מסוים (גשם, טמפרטורה, רוח, עיר) ומה קרה למחרת. אחרי שהוא קורא את כולם, נותנים לו יום חדש והוא מנחש. <b>חלק א' הוא הכנת הדפים</b>: שיהיו נכונים, מסודרים, ושלא יהיה בהם רמז אסור לתשובה.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>ארבעה מושגים שכל השאר בנוי עליהם</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>מושג</th><th>מה זה</th><th>אצלנו</th></tr></thead>
+      <tbody>
+        <tr><td><b>למידה מונחית</b><br><span class="small muted">Supervised learning</span></td><td>לומדים מדוגמאות שיש להן תשובה נכונה ידועה</td><td>לכל יום בעבר יודעים אם ירד גשם למחרת</td></tr>
+        <tr><td><b>מאפיינים</b> (X)</td><td>הקלט: מה שידוע ברגע החיזוי</td><td>מזג האוויר של היום, העיר והעונה</td></tr>
+        <tr><td><b>משתנה מטרה</b> (y)</td><td>מה שרוצים לחזות</td><td><code>RainTomorrow</code>: 1 או 0</td></tr>
+        <tr><td><b>סיווג בינארי</b></td><td>המטרה היא אחת משתי קטגוריות. ההפך מרגרסיה, שבה חוזים מספר</td><td>גשם / לא גשם. לא "כמה מ"מ"</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3>Baseline: הרף שכל מודל צריך לעבור</h3>
+    <p>Baseline הוא "מודל טיפש", התוצאה שמקבלים בלי ללמוד כלום. אצלנו 63.8% מהימים יבשים למחרת. מודל שתמיד עונה "לא ירד גשם" צודק ב-<b>63.8%</b> מהמקרים, בלי להסתכל על הנתונים בכלל.</p>
+    <div class="box trap"><span class="t">מלכודת</span><p>"המודל שלנו הגיע ל-65% דיוק" נשמע טוב, אבל זה כמעט ה-baseline. לכן בחלק ב' לא מסתפקים ב-accuracy (אחוז הצדקות). מסתכלים גם על כמה ימים גשומים המודל באמת תופס.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>מבנה הניקוד (למה שמים דגש איפה שמים)</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>חלק</th><th>נקודות</th></tr></thead>
+      <tbody>
+        <tr><td>איסוף וחישה של נתונים</td><td class="num">20</td></tr>
+        <tr><td>הגדרת הבעיה</td><td class="num">5</td></tr>
+        <tr><td>הבנת הנתונים (כולל איכות)</td><td class="num">35</td></tr>
+        <tr><td>הכנת הנתונים</td><td class="num">30</td></tr>
+        <tr><td>איכות הדוח ו-Python, איכות התרשימים</td><td class="num">5 + 5</td></tr>
+        <tr><td>בונוס</td><td class="num">עד 5</td></tr>
+      </tbody>
+    </table></div>
+    <p>65 מתוך 100 נקודות על <b>הבנה והכנה</b>. בוחנים פחות "האם הקוד רץ" ויותר "האם את מבינה את הנתונים".</p>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה: הפיץ' של 30 שניות</span>
+    <p>"בנינו dataset לחיזוי האם מחר ירד לפחות 1 מ"מ גשם, בשש ערים, מ-2010 עד נובמבר 2026. אספנו את הנתונים מ-Open-Meteo, איחדנו אותם לטבלה של 36,924 ימים, ויצרנו את משתנה המטרה בלי דליפת מידע. בניתוח מצאנו שהרמז הכי חזק הוא הגשם של היום, ושלכל עיר יש עונה וכיוון רוח גשומים משלה. מצאנו גם שמקור הנתונים מחליף מודל ב-2017 ובסוף 2024, ובנינו פונקציה אחת שהופכת כל קובץ JSON גולמי ל-31 מאפיינים."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l0"></div>
+  <div class="check" data-check="l0">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l0-1"><span>להגיד את הפיץ' בלי להסתכל</span></label>
+    <label><input type="checkbox" id="c-l0-2"><span>להסביר מה ההבדל בין מאפיין למשתנה מטרה, עם דוגמה מהפרויקט</span></label>
+    <label><input type="checkbox" id="c-l0-3"><span>להסביר למה 63.8% הוא ה-baseline, ולמה accuracy לבד לא מספיק</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#home">למבוא</a><a class="btn" href="#l1">לרמה 1</a></div>
+</section>
+
+<!-- ================================================================= L1 -->
+<section class="view" id="v-l1" data-view="l1" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 1</div>
+    <h2>הנתונים: מאיפה הם באים ומה יש בהם</h2>
+    <div class="lvl-meta"><span>כשעה</span><span>מחברת: סעיף 3.1</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>מה זה reanalysis, ולמה זה משנה הכל.</li>
+    <li>את 10 המשתנים ואת הסוג של כל אחד.</li>
+    <li>למה בחרנו 2010 עד נובמבר 2026.</li>
+    <li>את מסלול הנתונים מ-API ועד <code>final_dataset.csv</code>.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>Reanalysis: הנתונים הם תוצר של מודל, לא של מדחום</h3>
+    <p>Open-Meteo לא מחזיר מדידות של תחנה. הוא מחזיר נתוני <b>reanalysis</b>: מודל פיזיקלי של האטמוספרה שמקבל תצפיות מתחנות, מטוסים, מצופים, מכ"מים ולוויינים, ו"משלים את החורים" בחישוב. התוצאה היא ערך לכל שעה ולכל משבצת ברשת. ברירת המחדל, Best Match, משלבת שלושה מודלים של ECMWF:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>מודל</th><th>גודל משבצת</th><th>מאיזו שנה</th></tr></thead>
+      <tbody><tr><td>ERA5</td><td>כ-25 ק"מ</td><td>1940</td></tr><tr><td>ERA5-Land</td><td>כ-11 ק"מ</td><td>1950</td></tr><tr><td>ECMWF IFS</td><td>9 ק"מ</td><td>2017</td></tr></tbody>
+    </table></div>
+    <div class="box ours"><span class="t">שלוש השלכות שתצטרכי להגיד בהגנה</span><ul>
+      <li><b>אין ערכים חסרים:</b> המודל תמיד מחזיר ערך, ואין חיישן שמתקלקל.</li>
+      <li><b>הנתונים "חלקים":</b> כל ערך הוא ממוצע על משבצת של קילומטרים, ולכן ממטר מקומי יכול להימרח או להתפספס.</li>
+      <li><b>המודל משתנה לאורך השנים:</b> זה הממצא הגדול של רמה 5.</li>
+    </ul></div>
+    <p>הערכים היומיים הם סיכום של 24 ערכים שעתיים לפי השעון המקומי (<code>timezone=auto</code>). למשל <code>precipitation_sum</code> הוא סכום המשקעים השעתיים, ו-<code>weather_code</code> הוא המצב החמור ביותר ביום.</p>
+  </div>
+
+  <div class="block">
+    <h3>10 המשתנים, והסוג של כל אחד</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>משתנה</th><th>משמעות</th><th>סוג</th><th>למה הסוג חשוב</th></tr></thead>
+      <tbody>
+        <tr><td><code>weather_code</code></td><td>קוד WMO למזג האוויר החמור ביום</td><td>קטגוריאלי</td><td>שמור כמספר, אבל ממוצע של קודים חסר משמעות</td></tr>
+        <tr><td><code>temperature_2m_max/min/mean</code></td><td>טמפרטורה בגובה 2 מ'</td><td>רציף</td><td>שלושתם כמעט אותו מידע</td></tr>
+        <tr><td><code>apparent_temperature_mean</code></td><td>טמפרטורה מורגשת</td><td>רציף</td><td></td></tr>
+        <tr><td><code>precipitation_sum</code></td><td>סך המשקעים (גשם ושלג)</td><td>רציף, ≥ 0, הרבה אפסים</td><td>ממנו מוגדרת המטרה</td></tr>
+        <tr><td><code>rain_sum</code></td><td>גשם בלבד</td><td>רציף</td><td>שונה מסך המשקעים רק בימי שלג</td></tr>
+        <tr><td><code>precipitation_hours</code></td><td>שעות עם משקעים</td><td>בדיד, 0–24</td><td>מספר שלם, ולכן בגרף משתמשים בעמודות</td></tr>
+        <tr><td><code>wind_speed_10m_max</code></td><td>רוח מקסימלית בגובה 10 מ'</td><td>רציף</td><td></td></tr>
+        <tr><td><code>wind_direction_10m_dominant</code></td><td>מאיפה הרוח <b>מגיעה</b>, במעלות</td><td>רציף <b>מעגלי</b></td><td>359° ו-1° הם כמעט אותו כיוון</td></tr>
+      </tbody>
+    </table></div>
+    <p>ועוד שתי עמודות שהוספנו: <code>location</code> (קטגוריאלי בלי סדר, 6 ערים) ו-<code>date</code>.</p>
+  </div>
+
+  <div class="block">
+    <h3>ההחלטות על הנתונים, וההצדקות</h3>
+    <ul>
+      <li><b>6 הערים</b> נקבעו בהנחיות: London, New York, Sydney, Berlin, Tokyo, Vancouver.</li>
+      <li><b>2010-01-01 עד 2026-11-07:</b> 17 שנים נותנות הרבה עונות ומגוון מצבים. המבחן בחלק ב' יהיה על ימים <b>מהעתיד</b>, ולכן רצינו לכסות כמה שיותר. עצרנו שבוע לפני מועד האיסוף, כי לארכיון יש עיכוב של כמה ימים.</li>
+      <li><b>רק 10 המשתנים הנדרשים:</b> מספיק לבעיה ושומר על פשטות. מותר היה להוסיף, ולא היה צורך.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h3>מסלול הנתונים</h3>
+<pre><code>Open-Meteo API
+   │  data_collection.py   (102 requests: 6 cities x 17 years)
+   ▼
+data/raw/&lt;city&gt;_&lt;year&gt;.json      102 raw files, never edited
+   │  sensing.py           (no API calls)
+   ▼
+data/raw/sensed_data.csv         36,930 rows x 12 columns
+   │  dataset_creation.ipynb  (target, EDA, quality, preparation)
+   ▼
+data/processed/final_dataset.csv 36,924 rows x 34 columns</code></pre>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"הנתונים הם reanalysis: פלט של מודל אטמוספרי שמשלב תצפיות. לכן אין בהם ערכים חסרים, אבל הם חלקים יותר ממדידה בתחנה, וכל ערך מייצג משבצת של 9 עד 25 ק"מ. וכמו שנראה בהמשך, המודל עצמו מתחלף לאורך השנים."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l1"></div>
+  <div class="check" data-check="l1">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l1-1"><span>להסביר מה זה reanalysis, ושלוש השלכות שלו</span></label>
+    <label><input type="checkbox" id="c-l1-2"><span>לסווג כל אחד מ-10 המשתנים לפי סוג, ולהסביר את שני המקרים המיוחדים</span></label>
+    <label><input type="checkbox" id="c-l1-3"><span>לצייר את מסלול הנתונים, עם שמות הקבצים והמספרים</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l0">לרמה 0</a><a class="btn" href="#l2">לרמה 2</a></div>
+</section>
+
+<!-- ================================================================= L2 -->
+<section class="view" id="v-l2" data-view="l2" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 2</div>
+    <h2>איסוף וחישה: הקוד ששווה 20 נקודות</h2>
+    <div class="lvl-meta"><span>כשעה וחצי</span><span><code>data_collection.py</code>, <code>sensing.py</code></span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>להסביר כל דרישה בהנחיות, ואיך הקוד שלנו עומד בה.</li>
+    <li>מה זה rate limiting, ‏backoff ו-cache, ולמה צריך כל אחד.</li>
+    <li>מה ההבדל בין שגיאה 400 לשגיאות 429 ו-5xx.</li>
+    <li>למה האיסוף והחישה הם שני קבצים נפרדים.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>הגבלת קצב (Rate limiting) עם חלון נע</h3>
+    <p>השרת מרשה לכל היותר 5,000 בקשות בשעה ו-10,000 ביממה. שמרנו את זמני הבקשות ב-<code>deque</code> (תור), ולפני כל בקשה זרקנו מהתור את מה שישן מהחלון, ובדקנו כמה נשאר.</p>
+<pre><code>def _drop_old(self, now):
+    while self.hourly_times and now - self.hourly_times[0] &gt;= 60 * 60:
+        self.hourly_times.popleft()          # older than one hour: no longer counts
+    ...
+def wait(self):
+    while True:
+        now = time.time()
+        self._drop_old(now)
+        waits = []
+        if len(self.hourly_times) &gt;= self.hourly_limit:
+            waits.append(60 * 60 - (now - self.hourly_times[0]))   # until the oldest request leaves the window
+        ...
+        if not waits:
+            return
+        time.sleep(max(waits) + 1)</code></pre>
+    <ul>
+      <li><b>חלון נע:</b> לא סופרים "כמה בקשות היו מתחילת השעה הנוכחית". סופרים "כמה בקשות היו ב-60 הדקות האחרונות". זה יותר מדויק.</li>
+      <li><b>הזמן לחכות:</b> בדיוק עד שהבקשה הישנה ביותר יוצאת מהחלון, ועוד שנייה ליתר ביטחון.</li>
+      <li><b>כל ניסיון נספר</b> (<code>record()</code>), גם ניסיון שנכשל, כי השרת סופר כל בקשה שמגיעה אליו.</li>
+    </ul>
+    <div class="box idea"><span class="t">בפועל</span><p>היו לנו רק 102 בקשות, כך שלא התקרבנו להגבלה. אבל ההנחיות דורשות את המנגנון, והוא נכון גם אם יורידו יותר נתונים.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>טיפול בשגיאות: לא כל שגיאה שווה</h3>
+<pre><code>for attempt in range(1, MAX_RETRIES + 1):          # up to 5 attempts
+    limiter.wait()
+    try:
+        response = session.get(ENDPOINT, params=params, timeout=30)
+    except requests.RequestException:              # network error: like a server error
+        limiter.record(); time.sleep(BACKOFF_BASE ** attempt); continue
+    limiter.record()
+    if status == 200:  return payload
+    if status == 400:  raise BadRequest(reason)    # our request is wrong: stop
+    if status == 429 or status &gt;= 500:
+        time.sleep(BACKOFF_BASE ** attempt)        # 2, 4, 8, 16, 32 seconds
+        continue</code></pre>
+    <div class="tbl"><table>
+      <thead><tr><th>קוד</th><th>מה זה אומר</th><th>מה עושים</th><th>למה</th></tr></thead>
+      <tbody>
+        <tr><td>200</td><td>הצלחה</td><td>שומרים</td><td></td></tr>
+        <tr><td>400</td><td>הבקשה <b>שלנו</b> שגויה</td><td>עוצרים ומדפיסים את הסיבה</td><td>ניסיון חוזר ייכשל שוב. צריך לתקן את הבקשה</td></tr>
+        <tr><td>429</td><td>יותר מדי בקשות</td><td>מחכים ומנסים שוב</td><td>בעיה זמנית</td></tr>
+        <tr><td>5xx</td><td>תקלה בשרת</td><td>מחכים ומנסים שוב</td><td>בעיה זמנית בצד שלהם</td></tr>
+        <tr><td>שגיאת רשת</td><td>אין חיבור, timeout</td><td>כמו 5xx</td><td>בעיה זמנית</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>Exponential backoff:</b> ההמתנה מוכפלת בכל ניסיון: 2, 4, 8, 16, 32 שניות. ככה לא מציפים שרת שכבר עמוס, ונותנים לו יותר זמן להתאושש בכל פעם.</p>
+  </div>
+
+  <div class="block">
+    <h3>Cache ושמירת הנתונים הגולמיים</h3>
+<pre><code>output = OUTPUT_DIR / f"{location}_{year}.json"
+if output.exists():          # cache: never download a file that already exists
+    continue
+...
+output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")</code></pre>
+    <ul>
+      <li><b>Cache:</b> אם הקובץ קיים, מדלגים עליו. הרצה שנייה לא מורידה כלום, ואם קובץ אחד נכשל, הרצה חוזרת מורידה רק אותו.</li>
+      <li><b>למה בקשה לכל עיר ולכל שנה:</b> קבצים קטנים, קל לבדוק אותם, ומה שנכשל מורידים שוב לבד. 6 × 17 = 102 קבצים.</li>
+    </ul>
+    <div class="box trap"><span class="t">שאלה מכשילה: "הקבצים שמורים בדיוק כפי שהתקבלו?"</span><p><b>התוכן כן, הפורמט לא בדיוק.</b> אנחנו קוראים את ה-JSON (<code>response.json()</code>) וכותבים אותו מחדש עם <code>indent=2</code>, כלומר עם רווחים לקריאוּת. אין שום עיבוד או שינוי של ערכים. בנוסף הגדרנו ב-Git (<code>.gitattributes</code>) שהקבצים לא ישתנו אפילו בסימני סוף שורה. תשובה כנה כזו עדיפה על "כן" שאפשר להפריך.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>sensing.py: מ-102 קבצים לטבלה אחת</h3>
+<pre><code>def location_from_filename(path):
+    location, _year = path.stem.rsplit("_", 1)    # 'new_york_2015' -&gt; 'new_york'
+    return location
+
+df = pd.DataFrame(payload["daily"]).rename(columns={"time": "date"})
+df["location"] = location_from_filename(path)
+...
+df = pd.concat(frames, ignore_index=True)
+df = df.drop_duplicates(subset=["location", "date"], keep="first")
+df = df.sort_values(["location", "date"])
+df.to_csv("data/raw/sensed_data.csv", index=False)</code></pre>
+    <ul>
+      <li><b><code>rsplit("_", 1)</code>:</b> מפצל לפי הקו התחתון <b>האחרון</b> בלבד. <code>split</code> רגיל היה מפרק את <code>new_york</code> לשניים.</li>
+      <li><b>למה העיר נלקחת משם הקובץ:</b> התשובה של ה-API מכילה רק קואורדינטות, בלי שם עיר.</li>
+      <li><b><code>payload["daily"]</code></b> הוא מילון של רשימות (<code>{"time": [...], "weather_code": [...]}</code>), ו-<code>DataFrame</code> הופך כל רשימה לעמודה.</li>
+      <li><b>בדיקה מובנית:</b> אם חסר משתנה בקובץ, הסקריפט עוצר עם הודעה.</li>
+      <li><b>התוצאה:</b> 36,930 שורות, 0 כפילויות. 6 ערים × 6,155 ימים.</li>
+    </ul>
+    <div class="box idea"><span class="t">למה שני קבצים נפרדים?</span><p><b>הפרדת אחריות ושחזוריות.</b> האיסוף תלוי באינטרנט ובשרת חיצוני. החישה תלויה רק בקבצים מקומיים, ולכן כל אחד יכול להריץ אותה ולקבל בדיוק אותה טבלה. ההנחיות דורשות במפורש ש-<code>sensing.py</code> לא יפנה ל-API.</p></div>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"הלולאה סופרת כל ניסיון בחלון נע של שעה ושל יממה, וממתינה לפני שעוברים את המגבלה. על 429, ‏5xx ושגיאות רשת היא מחכה ומנסה שוב עם backoff אקספוננציאלי, ועל 400 היא עוצרת, כי הבעיה בבקשה שלנו. קבצים שכבר קיימים לא יורדים שוב. sensing.py עובד רק על הקבצים המקומיים, ולכן הוא ניתן לשחזור מלא."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l2"></div>
+  <div class="check" data-check="l2">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l2-1"><span>להסביר את <code>RateLimiter</code> שורה אחרי שורה, כולל למה <code>deque</code></span></label>
+    <label><input type="checkbox" id="c-l2-2"><span>להסביר למה 400 עוצר ו-429 לא, ומה זה backoff</span></label>
+    <label><input type="checkbox" id="c-l2-3"><span>לענות בכנות על השאלה "האם ה-JSON שמור בדיוק כפי שהתקבל"</span></label>
+    <label><input type="checkbox" id="c-l2-4"><span>להסביר את <code>rsplit</code> ולמה יש שני קבצים נפרדים</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l1">לרמה 1</a><a class="btn" href="#l3">לרמה 3</a></div>
+</section>
+
+<!-- ================================================================= L3 -->
+<section class="view" id="v-l3" data-view="l3" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 3</div>
+    <h2>משתנה המטרה ודליפת מידע</h2>
+    <div class="lvl-meta"><span>כשעה</span><span>מחברת: סעיף 2</span><span>רמה קריטית</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>לבנות את <code>RainTomorrow</code> מאפס, ולהסביר כל שורה.</li>
+    <li>למה <code>groupby</code> ובדיקת החורים קריטיים.</li>
+    <li>מה זה דליפת מידע (leakage), ולתת שלוש דוגמאות.</li>
+    <li>את ההתפלגות של המטרה, ולמה זה חשוב.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>הרעיון: התשובה כבר בטבלה, שורה אחת למטה</h3>
+<pre><code>df = df.sort_values(["location", "date"])                                  # 1. order by city, then time
+gap_days = df.groupby("location")["date"].diff().dt.days                   # 2. days since previous row
+next_day_precip = df.groupby("location")["precipitation_sum"].shift(-1)    # 3. tomorrow's value, same city
+df["RainTomorrow"] = (next_day_precip &gt;= RAIN_THRESHOLD_MM).astype(int)    # 4. 1 if &gt;= 1.0 mm
+df = df.loc[next_day_precip.notna()]                                       # 5. drop each city's last day</code></pre>
+    <div class="tbl"><table>
+      <thead><tr><th>date (לונדון)</th><th>משקעים היום</th><th>אחרי <code>shift(-1)</code></th><th>RainTomorrow</th></tr></thead>
+      <tbody>
+        <tr><td class="num">2010-01-04</td><td class="num">0.0</td><td class="num">3.2</td><td class="num">1</td></tr>
+        <tr><td class="num">2010-01-05</td><td class="num">3.2</td><td class="num">9.4</td><td class="num">1</td></tr>
+        <tr><td class="num">2010-01-06</td><td class="num">9.4</td><td class="num">0.0</td><td class="num">0</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3>שלוש טעויות שקטות שמנענו</h3>
+    <ol>
+      <li><b>בלי מיון:</b> השורה הבאה לא בהכרח מחר.</li>
+      <li><b>בלי <code>groupby("location")</code>:</b> היום האחרון של ברלין (2026-11-07) היה מקבל את הגשם של <b>לונדון 2010-01-01</b>, עיר אחרת ו-16 שנה אחורה.</li>
+      <li><b>בלי בדיקת חורים:</b> אם 5 במרץ חסר, ל-4 במרץ היה נכנס הגשם של 6 במרץ. <code>diff().dt.days</code> בדק שההפרש בין כל שתי שורות הוא בדיוק יום אחד. התוצאה: 0 חורים.</li>
+    </ol>
+    <p><b>היום האחרון של כל עיר נמחק</b> (6 שורות, ‏36,930 ← 36,924). אין לו מחר. אם היינו משאירים אותו, NaN ≥ 1 יוצא False, והיינו קובעים שלא ירד גשם בלי לדעת.</p>
+  </div>
+
+  <div class="block">
+    <h3>דליפת מידע (Data leakage): הדבר הכי חשוב בפרויקט</h3>
+    <p><b>דליפה</b> קורית כשבזמן האימון המודל רואה מידע שלא יהיה לו בזמן חיזוי אמיתי. התוצאות במעבדה נראות מעולות, והמודל נכשל במציאות.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>מאפיין</th><th>תקין?</th><th>למה</th></tr></thead>
+      <tbody>
+        <tr><td>הגשם של היום</td><td>✓</td><td>ידוע בסוף היום</td></tr>
+        <tr><td><code>next_day_precip</code> (הגשם של מחר)</td><td>✗</td><td>זו התשובה עצמה. לכן לא שמרנו אותו כעמודה</td></tr>
+        <tr><td>ממוצע של אתמול, היום ומחר</td><td>✗</td><td>מכיל את מחר בלי שרואים את זה</td></tr>
+        <tr><td>השלמת חסרים עם הממוצע של כל הנתונים</td><td>⚠</td><td>דליפה עדינה: הממוצע כולל ימים מהעתיד. לכן בסעיף 5 לא "למדנו" כלום מהנתונים</td></tr>
+        <tr><td>נרמול (scaling) על כל הנתונים לפני החלוקה</td><td>⚠</td><td>אותו דבר. בחלק ב' מתאימים את הנרמול רק על סט האימון</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3>ההתפלגות של המטרה (Prior)</h3>
+    <p>36.2% גשם, 63.8% יבש. לפי עיר: ונקובר 45.2% (הכי גשומה), טוקיו 36.6%, לונדון 35.9%, ניו יורק 33.8%, ברלין 33.6%, סידני 32.2% (הכי יבשה).</p>
+    <ul>
+      <li><b>מאוזן?</b> חוסר איזון מתון, כ-1:2. זו לא בעיה של אירוע נדיר, אבל accuracy לבד מטעה.</li>
+      <li><b>למה ונקובר הכי גשומה:</b> היא יושבת בין האוקיינוס השקט להרים. סערות חורף נדחפות במעלה ההרים ומורידות גשם.</li>
+    </ul>
+    <div class="box trap"><span class="t">שאלה פתוחה, ואיך לענות עליה</span><p>"למה המטרה נוצרה במחברת ולא ב-<code>sensing.py</code>?" ההנחיות לא חד-משמעיות. הסעיף על ארגון הנתונים מתאר את זה מיד אחרי <code>sensing.py</code>, אבל בנספח כתוב שהמחברת כוללת "יצירת משתנה המטרה". בחרנו במחברת לפי הנספח, ושאלנו את המתרגל.</p></div>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"ממיינים לפי עיר ותאריך, בודקים שאין חורים, ומזיזים את המשקעים שורה אחת למעלה בתוך כל עיר. כך כל יום מקבל את המשקעים של מחר. אם יש 1 מ"מ או יותר, המטרה היא 1. היום האחרון בכל עיר נמחק. הגשם של מחר משמש רק לבניית המטרה ולא נשמר כמאפיין, אחרת זו דליפת מידע."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l3"></div>
+  <div class="check" data-check="l3">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l3-1"><span>לכתוב את חמש השורות של בניית המטרה מהזיכרון</span></label>
+    <label><input type="checkbox" id="c-l3-2"><span>להסביר את הדוגמה של ברלין ולונדון בלי <code>groupby</code></span></label>
+    <label><input type="checkbox" id="c-l3-3"><span>להגדיר leakage ולתת שלוש דוגמאות, כולל אחת עדינה</span></label>
+    <label><input type="checkbox" id="c-l3-4"><span>לומר את ההתפלגות של המטרה ולפי עיר</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l2">לרמה 2</a><a class="btn" href="#l4">לרמה 4</a></div>
+</section>
+
+<!-- ================================================================= L4 -->
+<section class="view" id="v-l4" data-view="l4" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 4</div>
+    <h2>הבנת הנתונים (EDA): מה גילינו</h2>
+    <div class="lvl-meta"><span>שני מפגשים של שעה וחצי</span><span>מחברת: סעיף 3</span><span>35 נק'</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>לקרוא כל גרף ולהגיד מה הוא מראה ומה המסקנה.</li>
+    <li>KDE, הטיה, Spearman לעומת Pearson.</li>
+    <li>את ארבעת הקשרים, עם המספרים.</li>
+    <li>אילו משתנים משפיעים, ואילו כפולים.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>חלק א': כלים לקריאת נתונים</h3>
+    <ul>
+      <li><b>KDE (Kernel Density Estimation):</b> מעריך את פונקציית הצפיפות (PDF), מעין היסטוגרמה מוחלקת. השטח מתחת לעקומה הוא 1. השתמשנו ב-<code>common_norm=False</code>, כדי שכל עיר תנורמל לעצמה ונשווה צורות ולא כמויות.</li>
+      <li><b>הטיה (Skew):</b> המשקעים מוטים ימינה מאוד. 45.5% מהימים הם בדיוק 0 מ"מ, ויש "זנב" ארוך עד 183.6. לכן ציירנו רק ימים רטובים, בסקאלה לוגריתמית.</li>
+      <li><b>דו-שיאי:</b> לטמפרטורה יש שתי "גבעות", חורף וקיץ, ולכן היא לא מתפלגת נורמלית.</li>
+      <li><b>Pearson</b> מודד קשר לינארי. <b>Spearman</b> מודד קשר מונוטוני לפי דירוג, ולכן הוא עמיד לחריגים ולהטיה. בחרנו ב-Spearman בגלל המשקעים.</li>
+      <li><b>מתאם 0 לא אומר שאין קשר.</b> הוא אומר רק שאין קשר מונוטוני על פני <b>כל</b> הנתונים ביחד. כיוון הרוח הוא הדוגמה שלנו.</li>
+      <li><b>מתאם הוא לא סיבתיות.</b></li>
+    </ul>
+    <div class="box idea"><span class="t">למה השמטנו שני משתנים ממפת המתאמים</span><p><code>weather_code</code> הוא קטגוריה, ו"מתאם" עם קוד חסר משמעות. כיוון הרוח מעגלי: 350° ו-10° קרובים, אבל כמספרים הם רחוקים.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>חלק ב': הממצאים המרכזיים, עם מספרים</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>ממצא</th><th>מספרים</th><th>ההשלכה</th></tr></thead>
+      <tbody>
+        <tr><td><b>1. התמדה</b> (צפוי): גשם היום ← גשם מחר</td><td>55.7% אחרי יום גשום, 25.2% אחרי יום יבש. ונקובר 70%, ניו יורק 45%</td><td>המאפיין <code>rain_today</code></td></tr>
+        <tr><td><b>2. עונה × עיר</b></td><td>ונקובר: 64% בדצמבר, 17% ביולי. טוקיו הפוך: 16% בינואר, כ-50% בקיץ. סידני (חצי כדור דרומי): גשומה בפברואר–מרץ</td><td>חודש לבד לא עוזר. רק עם העיר, ועונה לפי חצי כדור</td></tr>
+        <tr><td><b>3. כיוון הרוח</b> (ההפתעה)</td><td>לונדון וברלין: דרום ודרום-מערב. ניו יורק: מזרח (54–60%), ומצפון-מערב 19%. <b>ונקובר: מזרח 72%, מערב 22%</b></td><td>קידוד מעגלי, יחד עם העיר</td></tr>
+        <tr><td><b>4. טווח הטמפרטורה</b> (פחות צפוי)</td><td>חציון 6.5° לפני גשם, 7.9° לפני יום יבש. עננים מקטינים את ההפרש בין יום ללילה</td><td>המאפיין <code>temp_range</code></td></tr>
+      </tbody>
+    </table></div>
+    <div class="box ours"><span class="t">למה ממצא 3 הוא הכי חזק לבונוס</span><p>המתאם הכללי של כיוון הרוח עם המטרה יצא חלש, אבל בתוך כל עיר ההבדל עצום, מפחות מ-20% ליותר מ-50%. ההשפעה חזקה, רק שונה בכל עיר, ולכן היא <b>מתבטלת</b> כשמערבבים את הערים. זה מלמד משהו כללי: <b>אסור להסיק "אין קשר" ממתאם כללי</b>, כשיש משתנה שמחלק את הנתונים לקבוצות. כאן המשתנה הזה הוא העיר. בונוס: ברמה 5 בדקנו, והדפוס בוונקובר נשמר גם אחרי החלפת המודל (76% ו-71%).</p></div>
+  </div>
+
+  <div class="block">
+    <h3>חלק ג': מה משפיע ומה כפול</h3>
+    <ul>
+      <li><b>שעות משקעים:</b> המשתנה החזק ביותר. חציון 5 שעות לפני גשם, 0 לפני יום יבש.</li>
+      <li><b><code>weather_code</code> בונה "מדרגות":</b> אחרי יום בהיר 5%, מעונן 25%, טפטוף קל ושלג קל בערך הממוצע, וגשם או שלג בינוני-כבד 50–62%.</li>
+      <li><b>רוח:</b> השפעה חלשה (18.5 לעומת 17.4 קמ"ש). <b>טמפרטורה לבד:</b> כמעט אין.</li>
+      <li><b>כפולים:</b> 4 משתני הטמפרטורה עם מתאם 0.92–0.99. שלושת משתני המשקעים עם מתאם 0.96–0.98. <code>rain_sum</code> שונה מ-<code>precipitation_sum</code> <b>בדיוק</b> בימים עם קודי השלג 71, 73 ו-75. בדקנו את זה, לא רק הנחנו.</li>
+    </ul>
+    <p><b>איזון וייצוגיות:</b> 36:64. רק 6 ערים באקלים ממוזג, 5 בחצי הכדור הצפוני ואחת בדרומי, ונתונים של מודל. מייצג את 6 הערים האלה, לא את העולם. אחוז הגשם השנתי נע בין 33% ל-40%, בלי מגמה ברורה.</p>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"הרמז הכי חזק הוא מה שקרה היום: גשם היום מכפיל את הסיכוי לגשם מחר, 56% לעומת 25%. הממצא המעניין הוא כיוון הרוח: המתאם הכללי חלש, אבל בכל עיר כיוון אחר מביא גשם. בוונקובר זו דווקא רוח מזרחית, 72%. כשמערבבים ערים, ההשפעות מבטלות זו את זו. לכן מקודדים את הכיוון בצורה מעגלית ומשאירים את העיר כמאפיין."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l4"></div>
+  <div class="check" data-check="l4">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l4-1"><span>להסביר KDE, ‏<code>common_norm</code>, ולמה המשקעים בסקאלה לוגריתמית</span></label>
+    <label><input type="checkbox" id="c-l4-2"><span>להסביר Spearman לעומת Pearson, ולמה בחרנו Spearman</span></label>
+    <label><input type="checkbox" id="c-l4-3"><span>להציג את ארבעת הקשרים עם המספרים</span></label>
+    <label><input type="checkbox" id="c-l4-4"><span>להסביר למה מתאם חלש של כיוון הרוח לא אומר שאין קשר</span></label>
+    <label><input type="checkbox" id="c-l4-5"><span>להסביר איך בדקנו שהמשתנים באמת כפולים</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l3">לרמה 3</a><a class="btn" href="#l5">לרמה 5</a></div>
+</section>
+
+<!-- ================================================================= L5 -->
+<section class="view" id="v-l5" data-view="l5" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 5</div>
+    <h2>איכות הנתונים: לא מה שחשבנו</h2>
+    <div class="lvl-meta"><span>כשעה וחצי</span><span>מחברת: סעיף 4</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>סוגי ערכים חסרים (MCAR, ‏MAR, ‏MNAR), ולמה אצלנו אין.</li>
+    <li>את 10 בדיקות ההיגיון, ומה נמצא.</li>
+    <li>איך מחליטים מה לעשות עם ערך קיצוני.</li>
+    <li>את הממצא על החלפת המודל, ולמה הוא חשוב.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>ערכים חסרים: התיאוריה, וההחלטה אצלנו</h3>
+    <ul>
+      <li><b>MCAR:</b> חסר באקראי לגמרי. <b>MAR:</b> החוסר תלוי במשתנים אחרים שנמדדו. <b>MNAR:</b> החוסר תלוי בערך עצמו, למשל חיישן שנשבר דווקא בסערה.</li>
+      <li>טיפול אפשרי: מחיקה, השלמה בממוצע או בחציון, אינטרפולציה בזמן.</li>
+      <li><b>אצלנו:</b> 0 חסרים, 0 כפילויות, 6,154 ימים לכל עיר. זה צפוי מנתוני מודל. אין מה להשלים.</li>
+    </ul>
+    <div class="box idea"><span class="t">ההנחיות מאפשרות לענות "לא רלוונטי"</span><p>כתוב בהן במפורש שאם שאלה לא רלוונטית לנתונים שלכם, מסבירים למה. "אין חסרים, כי זה reanalysis" היא תשובה מלאה, בתנאי שבדקתם והראיתם.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>בדיקות היגיון: מסכות של True/False</h3>
+<pre><code>"mean temperature outside [min, max]":
+    ~df["temperature_2m_mean"].between(df["temperature_2m_min"], df["temperature_2m_max"]),
+"precipitation without hours, or hours without precipitation":
+    (df["precipitation_sum"] &gt; 0) != (df["precipitation_hours"] &gt; 0),</code></pre>
+    <p><code>~</code> הופך True ל-False ולהפך. <code>A != B</code> בין שני ערכי True/False הוא "בדיוק אחד מהם נכון" (XOR). <code>mask.sum()</code> סופר את ה-True.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>מה נמצא</th><th>ההסבר</th><th>החלטה</th></tr></thead>
+      <tbody>
+        <tr><td>8 בדיקות עם 0 מקרים</td><td>הנתונים עקביים</td><td>אין מה לעשות</td></tr>
+        <tr><td>יום אחד שבו הממוצע נמוך מהמינימום (לונדון 31.12.2016: ‏5.3 / 4.7 / 7.3)</td><td>הבדל של 0.6° באופן שבו ה-API מחשב את הערכים</td><td>משאירים</td></tr>
+        <tr><td>70 ימים עם קוד 71 (שלג קל) ו-0.0 מ"מ</td><td>הדיוק הוא 0.1 מ"מ, ושלג קל מאוד מתעגל ל-0</td><td>משאירים</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3>ערכים קיצוניים: אמיתי או שגיאה?</h3>
+    <p>11 ימים עם יותר מ-100 מ"מ. בכולם הקוד הוא 65 (גשם כבד), עם הרבה שעות גשם, כלומר הם עקביים עם שאר המשתנים. רובם בטוקיו, בעונת הגשמים והטייפונים. חלקם אירועים ידועים: <b>טייפון Hagibis</b> (טוקיו 12.10.2019, ‏150.5 מ"מ, רוח 91 קמ"ש) ו<b>שרידי ההוריקן Ida</b> (ניו יורק 1.9.2021, ‏117 מ"מ).</p>
+    <p><b>ניו יורק 4.10.2022, ‏183.6 מ"מ:</b> באמצע סערת חוף של 5 ימים, שבזמנה שרידי ההוריקן Ian נעו לאורך החוף. האירוע סביר, אבל הכמות גבוהה מ-Ida, וייתכן שהמודל הגזים. אי אפשר לבדוק מול תחנה, כי ההנחיות מתירות רק את Open-Meteo.</p>
+    <div class="box ours"><span class="t">איך מחליטים: שלוש שאלות</span><ol>
+      <li>האם הערך <b>אפשרי פיזיקלית</b>? כן.</li>
+      <li>האם הוא <b>עקבי</b> עם המשתנים האחרים באותו יום? כן: קוד 65 ו-24 שעות גשם.</li>
+      <li>האם <b>מחיקה</b> תפגע במודל? כן: אלה בדיוק הימים שמודל גשם צריך להכיר.</li>
+    </ol><p><b>החלטה: משאירים.</b> בנוסף, ההשפעה מוגבלת: המטרה שואלת רק "1 מ"מ או יותר", והקטגוריה <code>heavy</code> מתחילה ב-10 מ"מ, בלי קשר לכמה מעל.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>הממצא הגדול: מקור הנתונים מחליף מודל</h3>
+    <p><b>השאלה:</b> אם המודל של Open-Meteo מתחלף, האם רואים את זה בנתונים? בדקנו ממוצעים לפי שנה ועיר.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>עיר</th><th>רוח 2010–16</th><th>רוח 2017–24</th><th>רוח 2025–26</th><th>גשם מחר 2010–16 / 17–24 / 25–26</th></tr></thead>
+      <tbody>
+        <tr><td>טוקיו</td><td class="num">20.6</td><td class="num">26.7</td><td class="num">13.8</td><td class="num">35.0% / 37.7% / 37.8%</td></tr>
+        <tr><td>ונקובר</td><td class="num">11.2</td><td class="num">17.2</td><td class="num">15.0</td><td class="num">48.3% / 43.6% / 40.1%</td></tr>
+        <tr><td>ברלין</td><td class="num">17.3</td><td class="num">19.9</td><td class="num">15.4</td><td class="num">33.5% / 34.1% / 31.7%</td></tr>
+      </tbody>
+    </table></div>
+    <ul>
+      <li><b>ינואר 2017:</b> הרוח קופצת <b>בכל הערים בבת אחת</b>. בטוקיו מ-21 ל-30 קמ"ש בחודש אחד. מזג אוויר לא עושה את זה בשש ערים במקביל, ולכן זה המודל (IFS). גם ימי ה-trace (מעט משקעים, פחות מ-1 מ"מ) נעשים נפוצים יותר: בברלין מ-18% ל-26%.</li>
+      <li><b>סוף 2024:</b> הרוח יורדת שוב. בטוקיו מ-25 ל-13–14 קמ"ש. לפי התיעוד, זה מערך נתונים חדש של IFS.</li>
+      <li><b>המטרה יציבה יותר:</b> הסף של 1 מ"מ מסנן את תוספת הטפטוף.</li>
+    </ul>
+    <div class="box idea"><span class="t">למה זה חשוב: Distribution shift</span><p>מודל לומד קשר בין ערכי מאפיינים למטרה. אם אותו מזג אוויר מקבל מהירות רוח שונה לפי השנה, המודל לומד ערבוב של שתי סקאלות. והמבחן בחלק ב' יגיע מהמודל החדש ביותר, מאחרי 2024. זה <b>שינוי בהתפלגות שנגרם ממקור הנתונים, לא ממזג האוויר</b>. <b>ההחלטה:</b> הוצאנו את מהירות הרוח (רמה 6), ובחלק ב' נבדוק את המודל על השנים האחרונות.</p></div>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"במובן הרגיל, איכות הנתונים גבוהה: אין חסרים, ובבדיקות ההיגיון נמצאו רק שני מקרים של עיגול. את הערכים הקיצוניים השארנו, כי הם עקביים ותואמים סערות אמיתיות. בעיית האיכות האמיתית שמצאנו היא שמקור הנתונים מחליף מודל: מהירות הרוח קופצת בכל הערים בינואר 2017 ושוב בסוף 2024. בגלל זה הוצאנו אותה מהמאפיינים."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l5"></div>
+  <div class="check" data-check="l5">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l5-1"><span>להגדיר MCAR, ‏MAR ו-MNAR עם דוגמה למזג אוויר</span></label>
+    <label><input type="checkbox" id="c-l5-2"><span>להסביר את שני הממצאים של בדיקות ההיגיון ולמה השארנו אותם</span></label>
+    <label><input type="checkbox" id="c-l5-3"><span>להגן על ההחלטה להשאיר את הערכים הקיצוניים, עם שלוש השאלות</span></label>
+    <label><input type="checkbox" id="c-l5-4"><span>להסביר את החלפת המודל ב-2017 ובסוף 2024, ולמה זה distribution shift</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l4">לרמה 4</a><a class="btn" href="#l6">לרמה 6</a></div>
+</section>
+
+<!-- ================================================================= L6 -->
+<section class="view" id="v-l6" data-view="l6" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 6</div>
+    <h2>הכנת הנתונים: מנתונים גולמיים ל-31 מאפיינים</h2>
+    <div class="lvl-meta"><span>שני מפגשים של שעה וחצי</span><span>מחברת: סעיף 5</span><span>30 נק'</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>את שני הכללים של הסעיף, ולמה הם מונעים דליפה.</li>
+    <li>לנמק כל מאפיין שנשאר וכל מאפיין שהוצא.</li>
+    <li>דיסקרטיזציה, קידוד מעגלי ו-One-Hot.</li>
+    <li>להסביר את <code>make_features</code>, ומה זה Mutual Information.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>שני כללי היסוד</h3>
+    <ol>
+      <li><b>כל מאפיין מחושב מיום אחד בלבד.</b> עוד לא יודעים אם דוגמת מבחן תכיל ימים קודמים, ולכן אין lag (גשם אתמול) ואין ממוצע נע. אם המתרגל יאשר שיש, אפשר להוסיף.</li>
+      <li><b>שום דבר לא נלמד מהנתונים.</b> כל צעד הוא כלל קבוע (סף, נוסחה, רשימה), בלי ממוצע ובלי נרמול שמחושבים מהנתונים. לכן הפונקציה נותנת אותה תוצאה על כל הטבלה ועל JSON בודד, ואין דרך שמידע מהעתיד ידלוף.</li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h3>בחירת מאפיינים: מה יצא, ולמה</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>משתנה</th><th>החלטה</th><th>נימוק</th></tr></thead>
+      <tbody>
+        <tr><td>max, min, apparent temp</td><td>יוצאים. נשארים <code>temperature_mean</code> ו-<code>temp_range</code></td><td>מתאם 0.92–0.99. ההפרש בין max ל-min נושא את האות של העננות</td></tr>
+        <tr><td><code>rain_sum</code></td><td>יוצא. במקומו <code>snow_today</code></td><td>זהה לסך המשקעים חוץ מבימי שלג</td></tr>
+        <tr><td><code>wind_speed_10m_max</code></td><td>יוצא</td><td>השפעה חלשה, <b>ולא יציב</b>: קופץ ב-6–7 קמ"ש כשהמודל מתחלף. הקפיצה גדולה מההבדל בין יום לפני גשם ליום לפני יום יבש</td></tr>
+        <tr><td><code>weather_code</code></td><td>7 קבוצות</td><td>קטגוריה. הקבוצות שומרות על ה"מדרגות"</td></tr>
+        <tr><td>כיוון רוח, תאריך</td><td>sin/cos, ועונה</td><td>משתנים מעגליים</td></tr>
+        <tr><td><code>feels_minus_actual</code></td><td>נוסה ויצא</td><td>MI כמעט אפס. ההנחה נבדקה ולא החזיקה</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3>דיסקרטיזציה: שלוש שיטות, ולמה בחרנו את השלישית</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>שיטה</th><th>איך</th><th>חיסרון אצלנו</th></tr></thead>
+      <tbody>
+        <tr><td>רוחב שווה (<code>pd.cut</code>)</td><td>טווחים שווים</td><td>הזנב של 183 מ"מ מוחץ כמעט הכל לסל הראשון</td></tr>
+        <tr><td>תדירות שווה (<code>pd.qcut</code>)</td><td>אותו מספר ימים בכל סל</td><td>45.5% אפסים. הספים יוצאים בלי משמעות</td></tr>
+        <tr><td><b>ידע מהתחום</b></td><td>ספים עם משמעות</td><td>זו הבחירה: 0, ‏1 (הסף של המטרה), 10 (גבול בין גשם בינוני לכבד)</td></tr>
+      </tbody>
+    </table></div>
+    <p><b>האימות:</b> הסיכוי לגשם מחר עולה בכל קטגוריה: dry ‏21%, ‏trace ‏35%, ‏moderate ‏52%, ‏heavy ‏66%. <b>הפתעה קטנה:</b> ימי trace (פחות מ-1 מ"מ, כלומר <code>rain_today</code> = 0) כבר גבוהים בבירור מימים יבשים. <code>rain_today</code> לבד היה מפספס את זה.</p>
+<pre><code>precip_cat = np.select([precip == 0, precip &lt; 1, precip &lt; 10],
+                       ["dry", "trace", "moderate"], default="heavy")   # first true condition wins</code></pre>
+  </div>
+
+  <div class="block">
+    <h3>קידוד מעגלי: למה sin ו-cos</h3>
+    <p><b>הבעיה:</b> כמספר, 359° רחוק מ-1° ב-358 יחידות, אבל אלה כמעט אותו כיוון. אותו דבר עם דצמבר (12) וינואר (1). <b>הפתרון:</b> כל ערך הופך לנקודה על מעגל, שני מספרים:</p>
+<pre><code>direction = np.deg2rad(days["wind_direction_10m_dominant"])
+out["wind_dir_sin"] = np.sin(direction)    # east (+1) / west (-1)
+out["wind_dir_cos"] = np.cos(direction)    # north (+1) / south (-1)
+out["month_sin"] = np.sin(2 * np.pi * month / 12)</code></pre>
+    <p>עכשיו 359° הוא (‎-0.02, 1.00) ו-1° הוא (0.02, 1.00). כמעט זהים. <b>למה לא רכיבי u/v:</b> הם כוללים את מהירות הרוח, שהיא לא יציבה.</p>
+    <p><b>עונה לפי חצי כדור:</b> הטבלה של העונות מתאימה לחצי הכדור הצפוני, ובסידני העונה מתהפכת (<code>where</code>). כך "קיץ" אומר קיץ בכל העולם.</p>
+  </div>
+
+  <div class="block">
+    <h3>One-Hot עם רשימה קבועה: הפרט שמראה הבנה עמוקה</h3>
+<pre><code>def one_hot(values, categories, prefix):
+    dummies = pd.get_dummies(pd.Categorical(values, categories=categories), prefix=prefix, dtype=int)
+    dummies.index = values.index
+    return dummies</code></pre>
+    <p><b>One-Hot</b> הופך קטגוריה לעמודה של 0/1 לכל ערך, כדי שהמודל לא "יחשוב" שיש סדר בין הערים. <b>הבעיה:</b> על יום מבחן בודד בלונדון, <code>get_dummies</code> רגיל היה יוצר רק עמודה אחת, <code>city_london</code>, ולמודל חסרות 5 עמודות. <b>הפתרון:</b> <code>pd.Categorical(..., categories=...)</code> מגדיר את כל הקטגוריות מראש, ולכן תמיד נוצרות כל העמודות.</p>
+    <div class="box trap"><span class="t">שאלה מתקדמת: "dummy trap"</span><p>כש-One-Hot שומר את כל הקטגוריות, העמודות של כל קבוצה מסתכמות תמיד ל-1, וזו תלות לינארית מלאה. לעצים זה לא משנה. ברגרסיה לוגיסטית עם רגולריזציה זה בדרך כלל בסדר. בלי רגולריזציה נהוג להוריד קטגוריה אחת. זו החלטה לחלק ב'.</p></div>
+  </div>
+
+  <div class="block">
+    <h3>Mutual Information: בדיקה שהמאפיינים עוזרים</h3>
+    <p><b>MI</b> מודד כמה ידיעת מאפיין מקטינה את אי-הוודאות לגבי המטרה. 0 אומר "אין מידע". בניגוד למתאם, הוא תופס גם קשרים שאינם קו ישר.</p>
+    <ul>
+      <li><b>בראש:</b> <code>precipitation_hours</code> ‏(0.061), ‏<code>precipitation_sum</code>, ‏<code>rain_today</code>. בדיוק כמו ב-EDA.</li>
+      <li><b>מהירות הרוח</b> נמוכה (0.008).</li>
+      <li><b>הנקודה החשובה:</b> MI בודק כל מאפיין <b>לבד</b>. עיר, עונה וחודש כמעט לא אומרים כלום לבד, אבל ב-EDA ראינו שההשפעה שלהם תלויה בעיר (אינטראקציה). לכן הם נשארו. <code>feels_minus_actual</code> קיבל כמעט 0 ואין לו סיבה כזו, ולכן הוא יצא.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h3>הבדיקה האחרונה: JSON גולמי</h3>
+    <p>לקחנו קובץ אמיתי (<code>london_2026.json</code>), יום אחד, והעברנו אותו דרך <code>json_to_days</code>, אחריה <code>make_features</code>, ואחריה הורדת <code>FEATURES_TO_DROP</code>. השווינו לאותו יום בטבלה עם <code>assert_frame_equal</code>, ויצא זהה: 33 עמודות. גם קוד 95 (סופת רעמים), שלא מופיע אצלנו, מקבל קבוצה. <b>זה בדיוק מה שיקרה במבחן של חלק ב'.</b></p>
+    <p><b>הטבלה הסופית:</b> 36,924 × 34. ‏2 מזהים (<code>location</code>, <code>date</code>), ‏31 מאפיינים, ומטרה.</p>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"כל ההכנה נמצאת בפונקציה אחת. היא מחשבת כל מאפיין מהיום עצמו בלבד, ולא לומדת כלום מהנתונים, כך שאין דליפה והיא עובדת על JSON בודד. הוצאנו משתנים כפולים, ואת מהירות הרוח כי היא לא יציבה בין מודלים. הוספנו קטגוריות של משקעים לפי ספים מהתחום, קידוד מעגלי לרוח ולחודש, עונה לפי חצי כדור ו-One-Hot עם רשימה קבועה. את כל זה אימתנו עם Mutual Information ועם בדיקה על JSON אמיתי."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l6"></div>
+  <div class="check" data-check="l6">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l6-1"><span>להסביר את שני הכללים, ולמה הם מונעים דליפה</span></label>
+    <label><input type="checkbox" id="c-l6-2"><span>לנמק כל משתנה שיצא, במיוחד את מהירות הרוח</span></label>
+    <label><input type="checkbox" id="c-l6-3"><span>להסביר את שלוש שיטות הדיסקרטיזציה, ולמה בחרנו ידע מהתחום</span></label>
+    <label><input type="checkbox" id="c-l6-4"><span>להסביר sin/cos עם הדוגמה של 359° ו-1°</span></label>
+    <label><input type="checkbox" id="c-l6-5"><span>להסביר למה One-Hot צריך רשימה קבועה</span></label>
+    <label><input type="checkbox" id="c-l6-6"><span>להסביר MI, ולמה MI נמוך לא תמיד אומר "להוציא"</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l5">לרמה 5</a><a class="btn" href="#l7">לרמה 7</a></div>
+</section>
+
+<!-- ================================================================= L7 -->
+<section class="view" id="v-l7" data-view="l7" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 7</div>
+    <h2>חשיבה ביקורתית: הרמה שמבדילה ציון 85 מ-100</h2>
+    <div class="lvl-meta"><span>כשעה וחצי</span><span>אין קוד חדש</span></div>
+  </div>
+  <div class="goals"><h4>בסוף הרמה תדעי</h4><ul>
+    <li>למנות את המגבלות של העבודה, בלי להתגונן.</li>
+    <li>מה היית עושה אחרת, ולמה.</li>
+    <li>איך כל החלטה בחלק א' משפיעה על חלק ב'.</li>
+    <li>לענות על "למה X ולא Y" לכל החלטה מרכזית.</li>
+  </ul></div>
+
+  <div class="block">
+    <h3>המגבלות (להגיד אותן לפני שהבוחן אומר)</h3>
+    <ol>
+      <li><b>נתוני מודל ולא מדידות:</b> אפשר שגשם מקומי יוחלק, ואי אפשר לאמת ערך כמו 183.6 מ"מ מול תחנה.</li>
+      <li><b>המודל מתחלף:</b> 2017 וסוף 2024. האימון מערב סקאלות, והמבחן יגיע מהסקאלה החדשה.</li>
+      <li><b>ייצוגיות:</b> 6 ערים ממוזגות, לא כל העולם.</li>
+      <li><b>מאפיינים מיום אחד בלבד:</b> מוותרים על מידע של מגמה (למשל ירידה בטמפרטורה מאתמול, שמסמנת חזית קרה) עד שהמתרגל יענה.</li>
+      <li><b>חסרים משתנים חשובים:</b> לחץ אטמוספרי, לחות וכיסוי עננים חזקים מאוד לחיזוי גשם, אבל לא נכללו בעשרת המשתנים הנדרשים.</li>
+      <li><b>MI בודק משתנה אחד בכל פעם:</b> הוא לא תופס אינטראקציות, כמו עונה × עיר.</li>
+    </ol>
+  </div>
+
+  <div class="block">
+    <h3>"למה X ולא Y": ההחלטות המרכזיות</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>בחרנו</th><th>ולא</th><th>כי</th></tr></thead>
+      <tbody>
+        <tr><td>Spearman</td><td>Pearson</td><td>המשקעים מוטים מאוד, ו-Spearman עובד לפי דירוג</td></tr>
+        <tr><td>להשאיר ערכים קיצוניים</td><td>למחוק</td><td>הם עקביים, תואמים סערות אמיתיות, וחשובים למודל גשם</td></tr>
+        <tr><td>ספים מהתחום</td><td><code>qcut</code></td><td>45.5% אפסים. לספים מהתחום יש משמעות</td></tr>
+        <tr><td>sin/cos לכיוון הרוח</td><td>u/v</td><td>u/v כוללים מהירות, שהיא לא יציבה</td></tr>
+        <tr><td>One-Hot</td><td>Label encoding (0..5)</td><td>לערים אין סדר. 0..5 ימציא סדר שלא קיים</td></tr>
+        <tr><td>בלי נרמול בחלק א'</td><td>StandardScaler על הכל</td><td>נרמול נלמד מהנתונים. אם עושים אותו לפני החלוקה, זו דליפה. מקומו בחלק ב', ורק על סט האימון</td></tr>
+        <tr><td>סיווג עם סף 1 מ"מ</td><td>רגרסיה על הכמות</td><td>ההגדרה בהנחיות. גם מקובל במטאורולוגיה, ומסנן טפטוף</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <h3>הגשר לחלק ב': מה כבר ברור עכשיו</h3>
+    <ul>
+      <li><b>חלוקה לפי זמן, לא אקראית:</b> ימים סמוכים דומים זה לזה (autocorrelation). חלוקה אקראית "מדליפה" מידע בין ימים צמודים. נכון יותר לאמן על השנים הישנות ולבדוק על החדשות, כמו במבחן האמיתי. ובגלל החלפת המודל, הבדיקה צריכה להיות על 2025–26.</li>
+      <li><b>מדדים:</b> ה-baseline הוא 63.8%. צריך <b>Recall</b> (כמה מהימים הגשומים תפסנו), ‏<b>Precision</b> (כמה מהתחזיות לגשם נכונות), ‏<b>F1</b> ו-<b>AUC</b>.</li>
+      <li><b>מודלים שמשלבים מאפיינים</b> (עצים, Random Forest), כי חלק מהאות נמצא באינטראקציות: עונה × עיר, ורוח × עיר.</li>
+      <li><b>הפונקציה מוכנה:</b> <code>json_to_days</code>, אחריה <code>make_features</code>, ואחריה <code>FEATURES_TO_DROP</code>.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <h3>על השימוש בכלי AI (שאלה שעלולה לעלות)</h3>
+    <p>ההנחיות מתירות כלי AI, אבל מזהירות שסימן לחוסר הבנה מוריד נקודות. <b>התשובה הנכונה היא לא להכחיש. היא להראות הבנה:</b> "השתמשנו בכלים כעזר, אבל כל החלטה אנחנו יודעים לנמק, ואת הקוד אנחנו יודעים להסביר." ואז להוכיח את זה בשאלה הבאה.</p>
+  </div>
+
+  <div class="say"><span class="t">משפט להגנה</span>
+    <p>"המגבלה העיקרית היא שהנתונים מגיעים ממודל שמתחלף לאורך השנים. לכן הוצאנו את מהירות הרוח, ובחלק ב' נחלק לפי זמן ונבדוק על השנים האחרונות. אם המתרגל יאשר שבמבחן יש כמה ימים, נוסיף מאפייני מגמה. והיינו רוצים גם לחץ ולחות, שלא היו בעשרת המשתנים."</p>
+  </div>
+
+  <div class="quiz" data-quiz="l7"></div>
+  <div class="check" data-check="l7">
+    <h4>בדיקה עצמית: אני יכולה...</h4>
+    <label><input type="checkbox" id="c-l7-1"><span>למנות לפחות 4 מגבלות, בלי להתגונן</span></label>
+    <label><input type="checkbox" id="c-l7-2"><span>לענות על כל שורה בטבלת "למה X ולא Y"</span></label>
+    <label><input type="checkbox" id="c-l7-3"><span>להסביר למה חלוקה אקראית מסוכנת, ואיזה מדדים נצטרך</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l6">לרמה 6</a><a class="btn" href="#l8">לרמה 8</a></div>
+</section>
+
+<!-- ================================================================= L8 -->
+<section class="view" id="v-l8" data-view="l8" hidden>
+  <div class="lvl-head">
+    <div class="kicker">רמה 8</div>
+    <h2>סימולציית הגנה</h2>
+    <div class="lvl-meta"><span>ימים 11–13</span><span>תרגול בקול</span></div>
+  </div>
+  <div class="goals"><h4>איך לתרגל</h4><ul>
+    <li><b>נאום של 2 דקות:</b> הפעילי את השעון והציגי את הפרויקט בקול. להקליט ולהקשיב.</li>
+    <li><b>שאלות:</b> קראי שאלה, ענִי בקול, <b>ורק אחר כך</b> פתחי את התשובה לדוגמה.</li>
+    <li>שאלה שנתקעת בה מקבלת סימון, וחוזרים אליה למחרת.</li>
+  </ul></div>
+
+  <div class="timer">
+    <span class="clock" id="clock">2:00</span>
+    <button class="btn" type="button" id="timer-start">התחלה</button>
+    <button class="btn ghost" type="button" id="timer-reset">איפוס</button>
+    <span class="small muted">מבנה מומלץ: הבעיה (15 שנ') ← הנתונים (20) ← המטרה ודליפה (20) ← 2–3 ממצאים (40) ← איכות והחלפת המודל (15) ← ההכנה (10)</span>
+  </div>
+
+  <div class="block">
+    <h3>איך עונים כשלא יודעים</h3>
+    <ol>
+      <li><b>לא לנחש בביטחון.</b> בוחן מזהה את זה מיד.</li>
+      <li>"אני לא בטוחה, אבל אני הייתי בודקת את זה כך..." ואז להסביר <b>איך</b> היית בודקת. זה מראה חשיבה.</li>
+      <li>לקשר למה שאת כן יודעת: "מה שבדקנו הוא..."</li>
+    </ol>
+  </div>
+
+  <h3>בנק שאלות <span class="small muted">(קל / בינוני / קשה)</span></h3>
+  <div class="block" id="mock"></div>
+
+  <div class="check" data-check="l8">
+    <h4>מוכנה להגנה כש...</h4>
+    <label><input type="checkbox" id="c-l8-1"><span>הנאום של 2 דקות עובר בלי דף</span></label>
+    <label><input type="checkbox" id="c-l8-2"><span>עניתי בקול על כל השאלות הקלות והבינוניות</span></label>
+    <label><input type="checkbox" id="c-l8-3"><span>עניתי על השאלות הקשות, וחזרתי על אלה שנתקעתי בהן</span></label>
+    <label><input type="checkbox" id="c-l8-4"><span>עשיתי סימולציה עם השותף או עם חבר</span></label>
+  </div>
+  <div class="pager"><a class="btn ghost" href="#l7">לרמה 7</a><a class="btn" href="#cards">לכרטיסיות המספרים</a></div>
+</section>
+
+<!-- ================================================================= CARDS -->
+<section class="view" id="v-cards" data-view="cards" hidden>
+  <div class="lvl-head">
+    <div class="kicker">חזרה יומית</div>
+    <h2>כרטיסיות מספרים</h2>
+    <p class="muted">לחיצה על הכרטיס הופכת אותו. 5 דקות ביום. המספרים מראים לבוחן שאת מכירה את הנתונים.</p>
+  </div>
+  <div class="fc" id="fc" role="button" tabindex="0" aria-live="polite"><span class="side" id="fc-side">שאלה</span><span class="txt" id="fc-txt"></span></div>
+  <div class="fc-bar">
+    <button class="btn ghost" type="button" id="fc-prev">הקודם</button>
+    <span class="small muted" id="fc-pos"></span>
+    <button class="btn ghost" type="button" id="fc-next">הבא</button>
+    <button class="btn ghost" type="button" id="fc-shuffle">ערבוב</button>
+  </div>
+  <h3>כל המספרים בטבלה אחת</h3>
+  <div class="tbl"><table id="fc-table"><thead><tr><th>שאלה</th><th>תשובה</th></tr></thead><tbody></tbody></table></div>
+</section>
+
+<footer>קבוצה 58 · נבנה ב-15 בנובמבר 2026 מתוך המחברת <code>dataset_creation.ipynb</code> והקוד בפרויקט. אם משהו בקוד ישתנה, המספרים כאן לא יתעדכנו מעצמם.</footer>
+</div>
+
+<script>
+(function(){
+  /* ---------------------------------------------------------------- storage */
+  var KEY = "rain-defense-v1";
+  var state = {checks:{}, quiz:{}};
+  try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && s.checks) state = s; if (!state.quiz) state.quiz = {}; } catch (e) {}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  /* ---------------------------------------------------------------- quizzes */
+  var QUIZ = {
+    l0: [
+      {q:"מה משתנה המטרה בפרויקט?", o:["כמות המשקעים מחר במ\"מ","האם מחר ירד לפחות 1.0 מ\"מ (0/1)","האם היום ירד גשם","הטמפרטורה מחר"], a:1, e:"סיווג בינארי: 1 אם מחר יש 1.0 מ\"מ או יותר. חיזוי של הכמות עצמה היה רגרסיה."},
+      {q:"מודל שתמיד עונה \"לא ירד גשם\". מה ה-accuracy שלו?", o:["50%","36.2%","63.8%","0%"], a:2, e:"63.8% מהימים יבשים למחרת, וזה ה-baseline. מודל שלא עובר אותו לא למד כלום."},
+      {q:"מה מהבאים אינו חלק מחלק א'?", o:["איסוף הנתונים","בדיקת איכות","אימון מודל וחישוב דיוק","הכנת מאפיינים"], a:2, e:"בחלק א' אין אימון מודלים. הם בחלק ב'."},
+      {q:"למה accuracy לבד לא מספיק אצלנו?", o:["כי הנתונים קטנים מדי","כי המחלקות לא מאוזנות, ומודל טיפש כבר מקבל 64%","כי accuracy לא מוגדר לסיווג","כי יש ערכים חסרים"], a:1, e:"עם יחס של כ-1:2, accuracy גבוה יכול להסתיר מודל שלא תופס אף יום גשום."}
+    ],
+    l1: [
+      {q:"מה זה reanalysis?", o:["מדידות גולמיות מתחנות","פלט של מודל פיזיקלי שמשלב תצפיות ומשלים פערים","תחזית לעתיד","נתונים שהוזנו ידנית"], a:1, e:"מודל אטמוספרי (ERA5, ‏ERA5-Land, ‏IFS) שמקבל תצפיות ומחשב ערך לכל נקודת רשת."},
+      {q:"למה אין בנתונים ערכים חסרים?", o:["ניקינו אותם","המודל מחזיר ערך לכל שעה ולכל נקודת רשת","Open-Meteo מוחק ימים חסרים","מזל"], a:1, e:"אין חיישן שמתקלקל. זו תכונה של reanalysis."},
+      {q:"מה הסוג של weather_code?", o:["רציף","בדיד, ספירה","קטגוריאלי (שמור כמספר)","בינארי"], a:2, e:"ממוצע של קודים חסר משמעות. לכן מקבצים אותו ומקודדים One-Hot."},
+      {q:"למה כיוון הרוח הוא משתנה מיוחד?", o:["הוא תמיד 0","הוא מעגלי: 359° ו-1° כמעט זהים","הוא קטגוריאלי","יש בו חסרים"], a:1, e:"לכן לא מחשבים איתו מתאם רגיל, ומקודדים אותו ב-sin/cos."},
+      {q:"כמה קובצי JSON גולמיים יש?", o:["6","17","102","36,924"], a:2, e:"6 ערים × 17 שנים (2010 עד 2026) = 102."}
+    ],
+    l2: [
+      {q:"השרת מחזיר 400. מה הקוד עושה?", o:["מחכה ומנסה שוב","עוצר ומדפיס את הסיבה","מדלג לעיר הבאה","שומר קובץ ריק"], a:1, e:"400 אומר שהבקשה שלנו שגויה, וניסיון חוזר ייכשל שוב. צריך לתקן."},
+      {q:"מה זה exponential backoff אצלנו?", o:["המתנה קבועה של 2 שניות","המתנה שמוכפלת: 2, 4, 8, 16, 32 שניות","ניסיון חוזר מיידי","המתנה של שעה"], a:1, e:"מגדילים את ההמתנה כדי לא להציף שרת עמוס ולתת לו זמן להתאושש."},
+      {q:"למה סופרים גם בקשות שנכשלו?", o:["בטעות","השרת סופר כל בקשה שמגיעה אליו","כדי לדעת כמה נכשלו","זה לא נכון, לא סופרים"], a:1, e:"המגבלה של השרת חלה על כל בקשה, גם על בקשה שהחזירה שגיאה."},
+      {q:"new_york_2015.json. מה מחזיר path.stem.rsplit(\"_\", 1)[0]?", o:["new","new_york","2015","york"], a:1, e:"rsplit עם 1 מפצל רק לפי הקו התחתון האחרון. split רגיל היה מפרק את new_york."},
+      {q:"למה sensing.py לא פונה ל-API?", o:["אין לו גישה לאינטרנט","דרישה בהנחיות, ושחזוריות: הוא עובד רק על קבצים מקומיים וקבועים","כדי לחסוך זמן","בגלל rate limit"], a:1, e:"הפרדה בין איסוף, שתלוי ברשת, לבין עיבוד שניתן לשחזר."}
+    ],
+    l3: [
+      {q:"מה קורה אם עושים shift(-1) בלי groupby(\"location\")?", o:["כלום","היום האחרון של עיר מקבל את הגשם של היום הראשון של העיר הבאה","הקוד נכשל","כל המטרות יוצאות 0"], a:1, e:"למשל ברלין 2026-11-07 הייתה מקבלת את לונדון 2010-01-01. זו טעות שקטה."},
+      {q:"למה בודקים שההפרש בין שורות הוא בדיוק יום אחד?", o:["לבדיקת מהירות","shift מניח שהשורה הבאה היא מחר. אם יש חור, המטרה תילקח מיום מאוחר יותר","בשביל הגרפים","זה לא נחוץ"], a:1, e:"0 חורים נמצאו. בלי הבדיקה, טעות כזו הייתה שקטה."},
+      {q:"מה מהבאים הוא דליפת מידע?", o:["גשם היום כמאפיין","ממוצע של אתמול, היום ומחר כמאפיין","עונה לפי חודש","העיר כמאפיין"], a:1, e:"הממוצע כולל את מחר, כלומר חלק מהתשובה."},
+      {q:"למה נמחקו בדיוק 6 שורות?", o:["כפילויות","היום האחרון של כל אחת מ-6 הערים, שאין לו מחר","ערכים חריגים","ימים חסרים"], a:1, e:"36,930 − 6 = 36,924."},
+      {q:"מה העיר הכי גשומה (לפי RainTomorrow)?", o:["לונדון","טוקיו","ונקובר, 45.2%","סידני"], a:2, e:"ונקובר 45.2%, והכי יבשה סידני 32.2%."}
+    ],
+    l4: [
+      {q:"למה Spearman ולא Pearson?", o:["הוא מהיר יותר","המשקעים מוטים מאוד, ו-Spearman עובד לפי דירוג ועמיד לחריגים","Pearson לא קיים ב-pandas","אין הבדל"], a:1, e:"Spearman מודד קשר מונוטוני לפי דירוג."},
+      {q:"P(גשם מחר) אחרי יום גשום, לעומת אחרי יום יבש?", o:["36% ו-36%","55.7% ו-25.2%","70% ו-10%","45% ו-32%"], a:1, e:"התמדה של מזג האוויר: יותר מפי 2."},
+      {q:"כיוון הרוח עם מתאם חלש למטרה. מה המסקנה הנכונה?", o:["לא משפיע, להוציא","ההשפעה חזקה אבל שונה בכל עיר, ומתבטלת כשמערבבים","מתאם תמיד צודק","צריך Pearson"], a:1, e:"בוונקובר מזרח 72% ומערב 22%. אסור להסיק \"אין קשר\" ממתאם כללי."},
+      {q:"מה מראה טווח הטמפרטורה (max − min)?", o:["כלום","קטן יותר לפני גשם (6.5° לעומת 7.9°), כי עננים מצמצמים את ההפרש","גדול יותר לפני גשם","תלוי רק בעיר"], a:1, e:"זה מוביל למאפיין temp_range."},
+      {q:"איך בדקנו ש-rain_sum כמעט זהה ל-precipitation_sum?", o:["הנחנו","בדקנו איפה הם שונים: רק בימים עם קודי שלג 71, 73, 75","מחקנו אחד","לפי השמות"], a:1, e:"ההנחיות: \"אם אתם מניחים שאפשר להסיר, בדקו את ההנחה.\""},
+      {q:"למה המשקעים מצוירים בסקאלה לוגריתמית ורק לימים רטובים?", o:["יותר יפה","45.5% מהימים הם 0, והזנב ארוך עד 183 מ\"מ. אחרת הכל נדחס","דרישה של seaborn","כדי להסתיר חריגים"], a:1, e:"ההטיה החזקה מסתירה את הצורה בסקאלה רגילה."}
+    ],
+    l5: [
+      {q:"חיישן שנשבר דווקא בסערות. איזה סוג חוסר זה?", o:["MCAR","MAR","MNAR","לא חוסר"], a:2, e:"החוסר תלוי בערך עצמו (מזג אוויר קיצוני), ולכן Missing Not At Random."},
+      {q:"70 ימים עם קוד 71 ו-0.0 מ\"מ. ההסבר?", o:["שגיאה, למחוק","שלג קל מאוד מתעגל ל-0, כי הדיוק הוא 0.1 מ\"מ","הקוד שגוי","חסרים"], a:1, e:"עיגול, לא שגיאה. משאירים."},
+      {q:"למה השארנו את 183.6 מ\"מ בניו יורק?", o:["שכחנו","אפשרי פיזיקלית, עקבי עם קוד 65 ו-24 שעות, ובאמצע סערה אמיתית. ומחיקה פוגעת","כי הוא בטוקיו","אין דרך למחוק"], a:1, e:"שלוש השאלות: אפשרי? עקבי? האם מחיקה פוגעת?"},
+      {q:"מה קרה למהירות הרוח בינואר 2017?", o:["ירדה בעיר אחת","קפצה בכל הערים בבת אחת, כי המודל הוחלף ל-IFS","לא השתנתה","הפכה לשלילית"], a:1, e:"בטוקיו מ-21 ל-30 קמ\"ש בחודש אחד. מזג אוויר לא עושה את זה."},
+      {q:"למה המטרה יציבה יחסית למרות החלפת המודל?", o:["מזל","הסף של 1 מ\"מ מסנן את תוספת הטפטוף הקל","המטרה לא תלויה במשקעים","תיקנו אותה"], a:1, e:"ימי ה-trace עלו, אבל ימים עם 1 מ\"מ ומעלה השתנו פחות."}
+    ],
+    l6: [
+      {q:"למה הפונקציה לא מחשבת ממוצע או נרמול מהנתונים?", o:["עצלות","כדי למנוע דליפה ולעבוד זהה על JSON בודד","pandas לא תומך","זה לא משנה"], a:1, e:"כל צעד הוא כלל קבוע, ולכן אין מידע מימים אחרים או מהעתיד."},
+      {q:"למה הוצאה מהירות הרוח?", o:["חסרים","השפעה חלשה, וקופצת ב-6–7 קמ\"ש כשהמודל מתחלף","כפולה לטמפרטורה","היא קטגוריאלית"], a:1, e:"הקפיצה בין מודלים גדולה מההבדל בין יום לפני גשם ליום לפני יום יבש."},
+      {q:"על יום מבחן אחד בלונדון, מה היה עושה get_dummies רגיל?", o:["6 עמודות","עמודה אחת בלבד, city_london","שגיאה","0 עמודות"], a:1, e:"לכן משתמשים ב-pd.Categorical עם רשימת קטגוריות קבועה."},
+      {q:"sin ו-cos של 359° ושל 1° יוצאים...", o:["רחוקים מאוד","כמעט זהים: (−0.02, 1) ו-(0.02, 1)","שניהם 0","שגיאה"], a:1, e:"זו המטרה של קידוד מעגלי."},
+      {q:"למה ספים מהתחום ולא qcut למשקעים?", o:["qcut איטי","45.5% אפסים, ולספים של qcut אין משמעות. ל-0, ‏1 ו-10 מ\"מ יש","אין סיבה","qcut לא עובד עם float"], a:1, e:"ואימות: 21%, ‏35%, ‏52%, ‏66%. עולה בכל קטגוריה."},
+      {q:"העונה עם MI כמעט 0. למה היא נשארה?", o:["טעות","MI בודק משתנה לבד, וההשפעה של העונה תלויה בעיר (אינטראקציה)","יש לה הרבה ערכים","היא כפולה"], a:1, e:"בוונקובר חורף גשום, בטוקיו קיץ גשום. ביחד זה מתבטל."},
+      {q:"מה ה-shape של final_dataset.csv?", o:["36,930 × 12","36,924 × 13","36,924 × 34","102 × 34"], a:2, e:"2 מזהים + 31 מאפיינים + מטרה = 34."}
+    ],
+    l7: [
+      {q:"למה לחלק לאימון ובדיקה לפי זמן ולא באקראי?", o:["זה מהיר יותר","ימים סמוכים דומים, וחלוקה אקראית מדליפה ביניהם. המבחן האמיתי הוא על העתיד","אין הבדל","כדי לאזן מחלקות"], a:1, e:"Autocorrelation. ובגלל החלפת המודל, כדאי לבדוק על 2025–26."},
+      {q:"איזה מדד עונה על \"מתוך הימים שבאמת ירד גשם, כמה תפסנו\"?", o:["Precision","Recall","Accuracy","AUC"], a:1, e:"Recall = TP / (TP + FN). מודל שתמיד אומר \"לא\" מקבל Recall של 0."},
+      {q:"StandardScaler על כל הנתונים לפני החלוקה. מה הבעיה?", o:["אין בעיה","דליפה: הממוצע וסטיית התקן כוללים את סט הבדיקה","הוא איטי","הוא משנה את המטרה"], a:1, e:"מתאימים את ה-scaler רק על סט האימון."},
+      {q:"איזה משתנה חסר שהיה כנראה משפר מאוד?", o:["תאריך","לחץ אטמוספרי ולחות","שם העיר","מספר השורה"], a:1, e:"ירידת לחץ ולחות גבוהה מקדימות גשם. הם לא היו ב-10 המשתנים הנדרשים."}
+    ]
+  };
+
+  function renderQuiz(el){
+    var id = el.getAttribute("data-quiz");
+    var qs = QUIZ[id]; if (!qs) return;
+    var saved = state.quiz[id] || {};
+    var head = document.createElement("div"); head.className = "quiz-head";
+    head.innerHTML = '<h3>בוחן</h3><span class="score" data-score="' + id + '"></span>';
+    el.appendChild(head);
+    qs.forEach(function(item, qi){
+      var box = document.createElement("div"); box.className = "q";
+      var t = document.createElement("div"); t.className = "qt"; t.textContent = (qi + 1) + ". " + item.q; box.appendChild(t);
+      var opts = document.createElement("div"); opts.className = "opts";
+      var expl = document.createElement("div"); expl.className = "expl"; expl.hidden = true; expl.textContent = item.e;
+      var buttons = [];
+      item.o.forEach(function(text, oi){
+        var b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.textContent = text;
+        b.addEventListener("click", function(){ answer(oi); });
+        opts.appendChild(b); buttons.push(b);
+      });
+      function answer(oi, silent){
+        buttons.forEach(function(bb, k){ bb.disabled = true; if (k === item.a) bb.classList.add("right"); });
+        if (oi !== item.a) buttons[oi].classList.add("wrong");
+        expl.hidden = false;
+        if (!silent){ state.quiz[id] = state.quiz[id] || {}; state.quiz[id][qi] = oi; save(); updateScore(id); }
+      }
+      box.appendChild(opts); box.appendChild(expl);
+      el.appendChild(box);
+      if (saved[qi] !== undefined) answer(saved[qi], true);
+    });
+    var reset = document.createElement("div");
+    reset.innerHTML = '<button type="button" class="btn ghost">לנסות את הבוחן שוב</button>';
+    reset.querySelector("button").addEventListener("click", function(){
+      delete state.quiz[id]; save(); el.innerHTML = ""; renderQuiz(el);
+    });
+    el.appendChild(reset);
+    updateScore(id);
+  }
+  function updateScore(id){
+    var qs = QUIZ[id], ans = state.quiz[id] || {}, done = 0, right = 0;
+    qs.forEach(function(item, qi){ if (ans[qi] !== undefined){ done++; if (ans[qi] === item.a) right++; } });
+    var s = document.querySelector('[data-score="' + id + '"]');
+    if (s) s.textContent = done ? (right + " נכונות מתוך " + qs.length) : (qs.length + " שאלות");
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-quiz]"), renderQuiz);
+
+  /* ---------------------------------------------------------------- mock defense */
+  var MOCK = [
+    {lvl:"e", q:"תסבירי בדקה מה הפרויקט.", a:"הפיץ' מרמה 0: בעיית סיווג בינארי (1 מ\"מ), 6 ערים, 2010–2026, ‏Open-Meteo, טבלה של 36,924 ימים, מטרה בלי דליפה, 2–3 ממצאים, ופונקציית מאפיינים שעובדת על JSON.", f:"ומה ה-baseline?"},
+    {lvl:"e", q:"מאיפה הנתונים, ואיך הם נוצרו?", a:"Open-Meteo Historical API. הנתונים הם reanalysis, כלומר פלט של מודל אטמוספרי (ERA5, ‏ERA5-Land, ‏IFS) שמשלב תצפיות מתחנות, מטוסים, מצופים, מכ\"מים ולוויינים. משבצת של 9–25 ק\"מ, וערכים יומיים שמחושבים מ-24 ערכים שעתיים.", f:"מה זה אומר על ערכים חסרים?"},
+    {lvl:"e", q:"מה ההתפלגות של המטרה, והאם הנתונים מאוזנים?", a:"36.2% גשם ו-63.8% יבש, כ-1:2. חוסר איזון מתון. ה-baseline הוא 63.8%, ולכן בחלק ב' נשתמש גם ב-Recall, ‏Precision, ‏F1 ו-AUC.", f:"איזו עיר הכי גשומה, ולמה?"},
+    {lvl:"e", q:"מה ההבדל בין data_collection.py ל-sensing.py?", a:"האיסוף פונה ל-API ושומר קבצים גולמיים. החישה קוראת רק קבצים מקומיים ובונה טבלה. ההפרדה נותנת שחזוריות, וזו גם דרישה בהנחיות.", f:"מה קורה אם מריצים את האיסוף פעמיים?"},
+    {lvl:"m", q:"איך מימשתם את ה-rate limiting?", a:"שני תורים (deque) של זמני בקשות, לשעה וליממה. לפני כל בקשה מוציאים זמנים ישנים מהחלון. אם הגענו למגבלה, ממתינים עד שהבקשה הישנה יוצאת מהחלון. כל ניסיון נספר, גם כושל.", f:"למה deque ולא רשימה?", fa:"popleft ב-deque מהיר (O(1)). ברשימה, הוצאה מההתחלה מזיזה את כל האיברים."},
+    {lvl:"m", q:"למה על 400 עוצרים, ועל 429 מנסים שוב?", a:"400 אומר שהבקשה שלנו שגויה, וניסיון חוזר ייכשל שוב, אז צריך לתקן. 429 ו-5xx הם בעיות זמניות בצד השרת, ולכן ממתינים עם backoff של 2, 4, 8, 16, 32 שניות.", f:"למה backoff אקספוננציאלי ולא קבוע?"},
+    {lvl:"m", q:"תכתבי איך בניתם את RainTomorrow.", a:"sort לפי עיר ותאריך, בדיקת חורים עם diff, ‏groupby(\"location\").shift(-1) על המשקעים, ‏>= 1.0 ‏astype(int), ומחיקת השורה עם NaN בכל עיר.", f:"מה היה קורה בלי groupby?"},
+    {lvl:"m", q:"מה זה data leakage? תני דוגמה מהפרויקט.", a:"מידע שהמודל רואה באימון ולא יהיה לו בחיזוי אמיתי. אצלנו: הגשם של מחר משמש רק לבניית המטרה ולא נשמר. דוגמה עדינה: נרמול או השלמת חסרים עם ממוצע של כל הנתונים. לכן בסעיף 5 לא למדנו כלום מהנתונים.", f:"ואיך תמנעו דליפה בחלק ב'?"},
+    {lvl:"m", q:"למה Spearman?", a:"המשקעים מוטים מאוד (45.5% אפסים וזנב עד 183 מ\"מ). Spearman עובד לפי דירוג, ולכן הוא עמיד לזה ומודד קשר מונוטוני ולא רק לינארי.", f:"ולמה לא כללתם את weather_code ואת כיוון הרוח?"},
+    {lvl:"m", q:"מה הממצא הכי מעניין שלכם?", a:"כיוון הרוח: מתאם כללי חלש, אבל בכל עיר כיוון אחר מביא גשם. בוונקובר דווקא מזרח (72%), ומערב רק 22%. ההשפעות מתבטלות כשמערבבים ערים. ובדקנו שהדפוס נשמר גם אחרי החלפת המודל.", f:"למה בוונקובר דווקא מזרח?", fa:"השערה: לפני שסערה מהאוקיינוס מגיעה, הרוח בפני הקרקע במצר נושבת ממזרח, ואחריה מסתובבת למערב עם התבהרות. לא אימתנו את זה במקור חיצוני, וכדאי להגיד את זה."},
+    {lvl:"m", q:"מה עשיתם עם ערכים חריגים?", a:"11 ימים מעל 100 מ\"מ. כולם עקביים (קוד 65, הרבה שעות), וחלקם סערות ידועות (Hagibis, ‏Ida). שאלנו שלוש שאלות: האם אפשרי, האם עקבי, והאם מחיקה תפגע. השארנו את כולם. הקטגוריה heavy גם ממתנת את ההשפעה.", f:"ו-183.6 בניו יורק?"},
+    {lvl:"m", q:"למה דיסקרטיזציה עם 0, 1 ו-10?", a:"ספים מהתחום. 1 הוא הסף של המטרה, ו-10 הוא גבול מקובל לגשם כבד. qcut לא מתאים עם 45.5% אפסים. אימות: 21%, ‏35%, ‏52%, ‏66%, עולה בכל קטגוריה.", f:"מה גילתה הקטגוריה trace?"},
+    {lvl:"m", q:"למה sin/cos?", a:"כיוון רוח וחודש הם מעגליים. כמספר, 359° רחוק מ-1°. כנקודה על מעגל: (−0.02, 1) ו-(0.02, 1), כמעט זהים.", f:"למה לא u/v?"},
+    {lvl:"h", q:"מה בעיית האיכות העיקרית שמצאתם?", a:"החלפת מודל המקור. מהירות הרוח קופצת בכל הערים בינואר 2017 (IFS, טוקיו מ-21 ל-30 בחודש אחד) ושוב בסוף 2024 (מ-25 ל-13). זה distribution shift שנגרם ממקור הנתונים. ההחלטות: הוצאנו את מהירות הרוח, ובחלק ב' נחלק לפי זמן ונבדוק על 2025–26.", f:"איך יודעים שזה המודל ולא שינוי אקלים?", fa:"זה קורה בכל הערים באותו חודש, ובדיוק בתאריכים שהתיעוד מציין. מזג אוויר לא משתנה כך."},
+    {lvl:"h", q:"למה One-Hot עם pd.Categorical ולא get_dummies רגיל?", a:"על יום מבחן בודד, get_dummies יוצר רק את העמודה של הערך שמופיע, ולמודל חסרות עמודות. Categorical עם רשימה קבועה יוצר תמיד את כל העמודות.", f:"ומה זה dummy trap?"},
+    {lvl:"h", q:"העונה עם MI כמעט 0. למה היא בכלל במאפיינים?", a:"MI בודק משתנה אחד בכל פעם. ההשפעה של העונה תלויה בעיר: בוונקובר החורף גשום, ובטוקיו הקיץ. כשמערבבים, ההשפעות מתבטלות. מודלים כמו עצים יכולים לשלב עונה עם עיר. feels_minus_actual, לעומת זאת, יצא כי אין לו סיבה כזו.", f:"איך הייתם בודקים אינטראקציה?", fa:"MI או אחוז הגשם בנפרד לכל עיר, או לבדוק בחלק ב' מודל עם העונה ובלעדיה."},
+    {lvl:"h", q:"למה אין lag features (גשם אתמול)?", a:"לא ידוע אם דוגמת מבחן בחלק ב' תכיל יותר מיום אחד, ושאלנו את המתרגל. מאפיין שאי אפשר לחשב במבחן לא שווה כלום. הפונקציה בנויה כך שאפשר להוסיף אותם.", f:"אם יאשרו, מה תוסיפו?"},
+    {lvl:"h", q:"האם ה-JSON באמת שמור כפי שהתקבל?", a:"התוכן זהה, ולא שונה שום ערך. הפורמט כתוב מחדש עם indent=2 לקריאוּת. ב-Git הגדרנו שקבצי data/ לא ישתנו בסימני סוף שורה.", f:"למה זה חשוב?"},
+    {lvl:"h", q:"איך תדעו שהפונקציה תעבוד במבחן?", a:"בדקנו: לקחנו קובץ JSON אמיתי, יום אחד, הרצנו json_to_days ואז make_features, הורדנו את FEATURES_TO_DROP, והשווינו עם assert_frame_equal. יצא זהה. בנוסף, קוד 95 שלא קיים אצלנו מקבל קבוצה.", f:"ומה אם יגיע null?"},
+    {lvl:"h", q:"מה היית עושה אחרת?", a:"מבקשת מודל קבוע (למשל רק ERA5) במקום Best Match, לעקביות לאורך זמן, כמו שהתיעוד ממליץ. מוסיפה לחץ ולחות. ומבררת מראש את מבנה המבחן, כדי להחליט על lag.", f:"למה לא עשיתם את זה?"},
+    {lvl:"h", q:"איך השתמשתם בכלי AI?", a:"ככלי עזר, כפי שההנחיות מתירות. כל החלטה אנחנו יודעים לנמק, ואת הקוד להסביר. ואז להוכיח את זה בשאלה הבאה, לא רק להגיד."}
+  ];
+  var mock = document.getElementById("mock");
+  var LBL = {e:"קל", m:"בינוני", h:"קשה"};
+  MOCK.forEach(function(m, i){
+    var d = document.createElement("details"); d.className = "mq";
+    var s = document.createElement("summary");
+    s.textContent = (i + 1) + ". " + m.q + " ";
+    var tg = document.createElement("span"); tg.className = "tag " + m.lvl; tg.textContent = LBL[m.lvl]; s.appendChild(tg);
+    d.appendChild(s);
+    var ans = document.createElement("div"); ans.className = "ans";
+    var p = document.createElement("p"); p.innerHTML = "<b>תשובה לדוגמה:</b> "; p.appendChild(document.createTextNode(m.a)); ans.appendChild(p);
+    if (m.f){ var f = document.createElement("p"); f.className = "small"; f.innerHTML = "<b>שאלת המשך צפויה:</b> "; f.appendChild(document.createTextNode(m.f)); ans.appendChild(f); }
+    if (m.fa){ var fa = document.createElement("p"); fa.className = "small muted"; fa.appendChild(document.createTextNode("ותשובה לה: " + m.fa)); ans.appendChild(fa); }
+    d.appendChild(ans); mock.appendChild(d);
+  });
+
+  /* ---------------------------------------------------------------- self-checks + ladder */
+  var boxes = Array.prototype.slice.call(document.querySelectorAll(".check input[type=checkbox]"));
+  boxes.forEach(function(b){
+    if (state.checks[b.id]) b.checked = true;
+    b.addEventListener("change", function(){ state.checks[b.id] = b.checked; save(); updateLadder(); });
+  });
+  function levelDone(l){
+    var list = document.querySelectorAll('[data-check="l' + l + '"] input');
+    if (!list.length) return false;
+    return Array.prototype.every.call(list, function(b){ return b.checked; });
+  }
+  function updateLadder(){
+    var rungs = document.querySelectorAll(".rung"), done = 0;
+    Array.prototype.forEach.call(rungs, function(r, i){
+      var ok = levelDone(i); r.classList.toggle("done", ok); if (ok) done++;
+    });
+    document.getElementById("progress-line").textContent = done + " מתוך 9 רמות הושלמו";
+  }
+
+  /* ---------------------------------------------------------------- routing */
+  var VIEWS = ["home","l0","l1","l2","l3","l4","l5","l6","l7","l8","cards"];
+  function show(){
+    var h = (location.hash || "").replace("#", "");
+    if (VIEWS.indexOf(h) < 0) h = "home";
+    Array.prototype.forEach.call(document.querySelectorAll(".view"), function(v){ v.hidden = v.getAttribute("data-view") !== h; });
+    Array.prototype.forEach.call(document.querySelectorAll(".rung"), function(r, i){
+      r.classList.toggle("current", h === "l" + i);
+      if (h === "l" + i) r.setAttribute("aria-current", "page"); else r.removeAttribute("aria-current");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-nav]"), function(p){ p.classList.toggle("on", p.getAttribute("data-nav") === h); });
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener("hashchange", show);
+
+  /* ---------------------------------------------------------------- timer */
+  var left = 120, tick = null, clock = document.getElementById("clock"), startBtn = document.getElementById("timer-start");
+  function draw(){ var m = Math.floor(left / 60), s = left % 60; clock.textContent = m + ":" + (s < 10 ? "0" : "") + s; }
+  startBtn.addEventListener("click", function(){
+    if (tick){ clearInterval(tick); tick = null; startBtn.textContent = "המשך"; return; }
+    startBtn.textContent = "עצירה";
+    tick = setInterval(function(){ if (left > 0){ left--; draw(); } if (left === 0){ clearInterval(tick); tick = null; startBtn.textContent = "הזמן נגמר"; } }, 1000);
+  });
+  document.getElementById("timer-reset").addEventListener("click", function(){ if (tick) clearInterval(tick); tick = null; left = 120; draw(); startBtn.textContent = "התחלה"; });
+  draw();
+
+  /* ---------------------------------------------------------------- flashcards */
+  var CARDS = [
+    ["כמה ערים?", "6: London, New York, Sydney, Berlin, Tokyo, Vancouver"],
+    ["טווח התאריכים?", "2010-01-01 עד 2026-11-07"],
+    ["כמה קובצי JSON?", "102 (6 ערים × 17 שנים)"],
+    ["כמה שורות ב-sensed_data.csv?", "36,930 (6 × 6,155 ימים), ‏12 עמודות"],
+    ["כמה שורות ב-final_dataset.csv?", "36,924 (נמחק היום האחרון בכל עיר)"],
+    ["כמה עמודות בטבלה הסופית?", "34: ‏2 מזהים, 31 מאפיינים, מטרה"],
+    ["ההתפלגות של המטרה?", "36.2% גשם, 63.8% יבש"],
+    ["ה-baseline?", "63.8% (תמיד \"לא ירד גשם\")"],
+    ["העיר הכי גשומה והכי יבשה?", "ונקובר 45.2%, סידני 32.2%"],
+    ["גשם מחר אחרי יום גשום, ואחרי יום יבש?", "55.7% ו-25.2%"],
+    ["ונקובר: רוח מזרחית, ורוח מערבית?", "72% ו-22% גשם מחר"],
+    ["ונקובר: דצמבר, ויולי?", "64% ו-17%"],
+    ["טווח טמפרטורה לפני גשם, ולפני יום יבש?", "חציון 6.5° ו-7.9°"],
+    ["שעות משקעים: חציון לפני גשם, ולפני יום יבש?", "5 שעות ו-0"],
+    ["כמה אחוז מהימים בלי משקעים בכלל?", "45.5%"],
+    ["היום הכי גשום?", "ניו יורק 4.10.2022, ‏183.6 מ\"מ"],
+    ["כמה ימים מעל 100 מ\"מ?", "11"],
+    ["מתאם בין משתני הטמפרטורה?", "0.92 עד 0.99 (Spearman)"],
+    ["מתאם בין המשקעים למטרה?", "0.33"],
+    ["כמה קודי weather_code מופיעים, ומה המקסימום?", "13 קודים, מקסימום 75"],
+    ["החלפות המודל?", "ינואר 2017 (IFS) וסוף 2024"],
+    ["רוח בטוקיו לפני ואחרי ינואר 2017?", "21 ← 30 קמ\"ש בחודש אחד"],
+    ["משקעים: dry, trace, moderate, heavy, ואחוז הגשם מחר?", "21%, ‏35%, ‏52%, ‏66%"],
+    ["קבוצות מזג אוויר: clear לעומת rain?", "9.9% לעומת 59.6%"],
+    ["המאפיין עם ה-MI הגבוה ביותר?", "precipitation_hours ‏(0.061)"],
+    ["backoff?", "2, 4, 8, 16, 32 שניות, עד 5 ניסיונות"],
+    ["מגבלות ה-API?", "5,000 בשעה, 10,000 ביממה"],
+    ["בדיקות היגיון שנכשלו?", "יום 1 (ממוצע מתחת למינימום), ו-70 ימי שלג קל עם 0 מ\"מ"]
+  ];
+  var order = CARDS.map(function(_, i){ return i; }), pos = 0, flipped = false;
+  var fc = document.getElementById("fc"), fcTxt = document.getElementById("fc-txt"), fcSide = document.getElementById("fc-side"), fcPos = document.getElementById("fc-pos");
+  function drawCard(){
+    var c = CARDS[order[pos]];
+    fcTxt.textContent = flipped ? c[1] : c[0];
+    fcSide.textContent = flipped ? "תשובה" : "שאלה";
+    fc.classList.toggle("back", flipped);
+    fcPos.textContent = (pos + 1) + " / " + CARDS.length;
+  }
+  function flip(){ flipped = !flipped; drawCard(); }
+  fc.addEventListener("click", flip);
+  fc.addEventListener("keydown", function(e){ if (e.key === "Enter" || e.key === " "){ e.preventDefault(); flip(); } });
+  document.getElementById("fc-next").addEventListener("click", function(){ pos = (pos + 1) % CARDS.length; flipped = false; drawCard(); });
+  document.getElementById("fc-prev").addEventListener("click", function(){ pos = (pos - 1 + CARDS.length) % CARDS.length; flipped = false; drawCard(); });
+  document.getElementById("fc-shuffle").addEventListener("click", function(){
+    for (var i = order.length - 1; i > 0; i--){ var j = Math.floor(Math.random() * (i + 1)); var t = order[i]; order[i] = order[j]; order[j] = t; }
+    pos = 0; flipped = false; drawCard();
+  });
+  var tb = document.querySelector("#fc-table tbody");
+  CARDS.forEach(function(c){ var tr = document.createElement("tr"); var a = document.createElement("td"); a.textContent = c[0]; var b = document.createElement("td"); b.textContent = c[1]; tr.appendChild(a); tr.appendChild(b); tb.appendChild(tr); });
+  drawCard();
+
+  updateLadder();
+  show();
+})();
+</script>
