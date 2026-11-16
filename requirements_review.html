@@ -1,0 +1,465 @@
+<title>דרישות מול פתרונות RainTomorrow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Rubik:wght@500;600;700&display=swap">
+<style>
+/* Layout: one reading column that follows the order of the course instructions. Each requirement is a row-card:
+   the requirement, a status chip, then "the problem" and "our solution" (or "how it could be solved"). Same palette as the other project pages. */
+:root{
+  --bg:#f5f4f0; --surface:#ffffff; --surface2:#eeece6; --ink:#1b1c1e; --muted:#5c5b56;
+  --line:#dedbd2; --accent:#1f5f8b; --accent-soft:#e1ecf5;
+  --ok:#2d6a3e; --ok-soft:#e2f0e5; --part:#975700; --part-soft:#faefd9; --todo:#7a3b8f; --todo-soft:#f2e6f6;
+  --code-bg:#f0eee7;
+  --font-body:"Heebo","Segoe UI","Arial Hebrew",Arial,sans-serif;
+  --font-head:"Rubik","Heebo","Segoe UI",Arial,sans-serif;
+  --font-mono:Consolas,"Cascadia Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141619; --surface:#1d2024; --surface2:#25292e; --ink:#ecebe6; --muted:#a5a29b;
+    --line:#33373d; --accent:#82b8df; --accent-soft:#1b2f40;
+    --ok:#89ca9c; --ok-soft:#192e20; --part:#e7b35f; --part-soft:#372a14; --todo:#d4a6e6; --todo-soft:#2e2035;
+    --code-bg:#191c20; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141619; --surface:#1d2024; --surface2:#25292e; --ink:#ecebe6; --muted:#a5a29b;
+  --line:#33373d; --accent:#82b8df; --accent-soft:#1b2f40;
+  --ok:#89ca9c; --ok-soft:#192e20; --part:#e7b35f; --part-soft:#372a14; --todo:#d4a6e6; --todo-soft:#2e2035;
+  --code-bg:#191c20; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16.5px;line-height:1.75;direction:rtl}
+.wrap{max-width:900px;margin:0 auto;padding-block:30px 90px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--font-head);text-wrap:balance;line-height:1.25;margin:0}
+h1{font-size:2rem}
+h2{font-size:1.45rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+h2 .pts{font-size:.9rem;font-weight:500;color:var(--muted);font-family:var(--font-body)}
+h3{font-size:1.05rem}
+p{margin:0;max-width:70ch}
+ul,ol{margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:3px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+code{font-family:var(--font-mono);font-size:.85em;background:var(--code-bg);padding:1px 5px;border-radius:4px;direction:ltr;unicode-bidi:isolate}
+.kicker{color:var(--accent);font-weight:600;font-size:.88rem;letter-spacing:.03em}
+.lead{color:var(--muted);font-size:1.05rem}
+.small{font-size:.88rem}
+.muted{color:var(--muted)}
+header{display:flex;flex-direction:column;gap:8px}
+
+/* summary */
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.88rem;color:var(--muted);align-items:center}
+.st{display:inline-block;font-size:.76rem;font-weight:600;padding:1px 10px;border-radius:99px;white-space:nowrap}
+.st.ok{background:var(--ok-soft);color:var(--ok)}
+.st.part{background:var(--part-soft);color:var(--part)}
+.st.todo{background:var(--todo-soft);color:var(--todo)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;background:var(--surface);font-size:.92rem}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:start;vertical-align:top}
+th{background:var(--surface2);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+nav.toc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 18px}
+nav.toc ol{columns:2;column-gap:2em;display:block}
+nav.toc li{break-inside:avoid}
+@media (max-width:620px){nav.toc ol{columns:1}}
+
+/* stage */
+.stage{display:flex;flex-direction:column;gap:12px;padding-top:16px;border-top:2px solid var(--line)}
+.intro{color:var(--muted)}
+.req{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 16px;display:flex;flex-direction:column;gap:9px;border-inline-start:5px solid var(--ok)}
+.req.part{border-inline-start-color:var(--part)}
+.req.todo{border-inline-start-color:var(--todo)}
+.req-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.req-head h3{flex:1 1 280px;min-width:0}
+.row{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:10px;align-items:start}
+@media (max-width:560px){.row{grid-template-columns:1fr;gap:2px}}
+.row .k{font-size:.8rem;font-weight:700;color:var(--muted);letter-spacing:.03em;padding-top:3px}
+.row.sol .k{color:var(--ok)}
+.req.part .row.sol .k{color:var(--part)}
+.row.how .k{color:var(--todo)}
+.row.where .k{color:var(--accent)}
+.row .v{min-width:0;display:flex;flex-direction:column;gap:5px}
+.note{border-inline-start:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:6px}
+footer{color:var(--muted);font-size:.85rem;border-top:1px solid var(--line);padding-top:12px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="kicker">למידת מכונה · פרויקט חלק א' · קבוצה 58</div>
+  <h1>מה ההוראות דרשו, ומה עשינו</h1>
+  <p class="lead">כל שלבי הפרויקט כפי שהם מופיעים בהוראות הקורס, לפי הסדר. לכל דרישה: מה הבעיה, ואיך פתרנו אותה. דרישה שעוד לא טופלה מסומנת ככזו, וכתוב בקצרה איך אפשר לפתור אותה. זמן קריאה: כחצי שעה.</p>
+  <div class="legend"><span class="st ok">בוצע</span><span class="st part">חלקי</span><span class="st todo">עוד לא</span><span>· מצב נכון ל-16 בנובמבר 2026</span></div>
+</header>
+
+<!-- ============================================================ summary -->
+<div class="tbl"><table>
+  <thead><tr><th>שלב בהוראות</th><th>נקודות</th><th>מצב</th></tr></thead>
+  <tbody>
+    <tr><td><a href="#s1">1. איסוף וחישה של נתונים</a></td><td class="num">20</td><td><span class="st ok">בוצע</span></td></tr>
+    <tr><td><a href="#s2">2. הגדרת הבעיה</a></td><td class="num">5</td><td><span class="st todo">עוד לא</span></td></tr>
+    <tr><td><a href="#s3">3. הבנת הנתונים, כולל איכות</a></td><td class="num">35</td><td><span class="st ok">בוצע</span> <span class="small muted">(במחברת. הניסוח לדוח עוד חסר)</span></td></tr>
+    <tr><td><a href="#s4">4. הכנת הנתונים</a></td><td class="num">30</td><td><span class="st ok">בוצע</span> <span class="small muted">(במחברת)</span></td></tr>
+    <tr><td><a href="#s5">5. איכות הדוח, Python ותרשימים</a></td><td class="num">5 + 5</td><td><span class="st part">חלקי</span> <span class="small muted">(הקוד והגרפים קיימים, הדוח לא)</span></td></tr>
+    <tr><td><a href="#s6">6. בונוס</a></td><td class="num">עד 5</td><td><span class="st part">חלקי</span> <span class="small muted">(יש מועמדים טובים)</span></td></tr>
+    <tr><td><a href="#s7">7. הגשה וקבצים (נספח)</a></td><td class="num">הורדת נקודות אם חסר</td><td><span class="st part">חלקי</span></td></tr>
+  </tbody>
+</table></div>
+
+<div class="note"><b>בשורה אחת:</b> כל עבודת הנתונים והקוד גמורה. מה שנשאר הוא בעיקר <b>כתיבה</b>: הגדרת הבעיה, הדוח ב-PDF, ובסוף אריזה ל-ZIP. במקביל עדיין חסרות שתי תשובות מהמתרגל.</div>
+
+<nav class="toc" aria-label="תוכן עניינים"><strong>לפי ההוראות</strong><ol>
+  <li><a href="#s0">הנחיות כלליות</a></li>
+  <li><a href="#s1">איסוף וחישה (20)</a></li>
+  <li><a href="#s2">הגדרת הבעיה (5)</a></li>
+  <li><a href="#s3">הבנת הנתונים (35)</a></li>
+  <li><a href="#s4">הכנת הנתונים (30)</a></li>
+  <li><a href="#s5">איכות הדוח והתרשימים (10)</a></li>
+  <li><a href="#s6">בונוס (5)</a></li>
+  <li><a href="#s7">הגשה וקבצים</a></li>
+</ol></nav>
+
+<!-- ============================================================ 0 -->
+<section class="stage" id="s0">
+  <h2>הנחיות כלליות <span class="pts">חלות על כל הפרויקט</span></h2>
+
+  <div class="req">
+    <div class="req-head"><h3>לתעד כל פעולה: למה עשינו, מה יצא, מה למדנו, מה ההשלכה</h3><span class="st ok">בוצע במחברת</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>הבודקים רוצים לראות חשיבה, לא רק קוד. גרף בלי הסבר כמעט לא שווה נקודות.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>אחרי כל קוד וגרף במחברת יש תא טקסט עם הממצא, ההסבר וההחלטה. כל תת-סעיף נגמר במשפט "מה זה אומר להמשך".</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>Python בלבד, ושחזוריות: הקוד ירוץ זהה אצל הבודקת</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>אצל הבודקת יכולות להיות גרסאות אחרות של ספריות, ונתונים שמגיעים מהאינטרנט יכולים להשתנות.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><ul>
+      <li><code>requirements.txt</code> עם גרסאות מדויקות, וסביבה וירטואלית (<code>.venv</code>).</li>
+      <li>הנתונים הגולמיים שמורים בקבצים, ו-<code>sensing.py</code> והמחברת עובדים רק עליהם. אין תלות באינטרנט אחרי האיסוף.</li>
+      <li><code>random_state=42</code> בחישוב ה-MI, כדי שהתוצאה תהיה זהה בכל הרצה.</li>
+      <li>המחברת הורצה מההתחלה עד הסוף בלי שגיאות. הכל ב-Git, ב-repo <code>ml_project_58</code>.</li>
+    </ul></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>להבין כל מה שעשינו (שימוש מושכל בכלי AI)</h3><span class="st part">בתהליך</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>לפי ההוראות, כל סימן לכך שלא הבנתם עד הסוף מוריד נקודות.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>קוד פשוט עם הערות, מסמכי הסבר בעברית לכל סעיף, וקורס הכנה להגנה. מה שנשאר עלייך: לעבור על הקוד שורה אחרי שורה.</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 1 -->
+<section class="stage" id="s1">
+  <h2>1. איסוף וחישה של נתונים <span class="pts">20 נקודות</span></h2>
+  <p class="intro">המטרה: לבנות בעצמנו dataset מה-API של Open-Meteo, לבעיית סיווג בינארי של <code>RainTomorrow</code>: האם מחר ירד לפחות 1.0 מ"מ.</p>
+
+  <div class="req">
+    <div class="req-head"><h3>לאסוף מ-6 מיקומים את 10 המשתנים היומיים, בטווח תאריכים לבחירתנו</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>צריך להחליט כמה שנים לאסוף, ולזכור שהמודל ייבחן בעתיד על נתונים מאחרי ההגשה של חלק ב'.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v">
+      <p>London, New York, Sydney, Berlin, Tokyo, Vancouver, מ-<b>2010-01-01 עד 2026-11-07</b>. בדיוק 10 המשתנים הנדרשים.</p>
+      <p><b>נימוק:</b> 17 שנים נותנות מגוון גדול של עונות ומצבים, וזה חשוב כשהמבחן יהיה על העתיד. עצרנו שבוע לפני מועד האיסוף, כי לארכיון יש עיכוב של כמה ימים.</p>
+    </div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p><code>data_collection.py</code>: ‏<code>LOCATIONS</code>, ‏<code>DAILY_VARIABLES</code>, ‏<code>START_YEAR</code>, ‏<code>END_DATE</code></p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>בקשות GET עם הפרמטרים הנדרשים, וחלוקה לבקשות לבחירתנו</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>אפשר לבקש הכל בבקשה אחת ענקית או לפצל. בקשה ענקית שנכשלת מחייבת להוריד הכל מחדש.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p><b>בקשה אחת לכל עיר ולכל שנה:</b> 6 × 17 = 102 בקשות, וכל תשובה נשמרת כ-<code>&lt;city&gt;_&lt;year&gt;.json</code>. כל בקשה כוללת <code>latitude</code>, ‏<code>longitude</code>, ‏<code>start_date</code>, ‏<code>end_date</code>, ‏<code>daily</code> ו-<code>timezone=auto</code>. קבצים קטנים קל לבדוק, ואם אחד נכשל מורידים רק אותו.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p><code>build_params()</code>, ‏<code>year_ranges()</code></p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>לולאה שסופרת בקשות וממתינה לפני שעוברים 5,000 בשעה או 10,000 ביממה</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>אם עוברים את המגבלה, השרת חוסם. צריך לדעת כמה בקשות נשלחו בשעה וביממה <b>האחרונות</b>, לא מתחילת השעה.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>המחלקה <code>RateLimiter</code> שומרת את זמני הבקשות בשני תורים (<code>deque</code>), אחד לחלון של שעה ואחד ליממה. לפני כל בקשה היא מוציאה זמנים ישנים מהחלון. אם הגענו למגבלה, היא ממתינה עד שהבקשה הישנה ביותר יוצאת מהחלון. <b>כל ניסיון נספר</b>, גם ניסיון שנכשל, כי השרת סופר כל בקשה שמגיעה אליו.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p><code>RateLimiter.wait()</code>, ‏<code>record()</code>, ‏<code>_drop_old()</code></p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>על 429 או 5xx: להמתין ולנסות שוב. על 400: לתקן את הבקשה</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>לא כל שגיאה זהה. חלק מהשגיאות זמניות, וחלק אומרות שהבקשה עצמה שגויה, ואז ניסיון חוזר לא יעזור.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><ul>
+      <li><b>429, ‏5xx ושגיאות רשת:</b> ממתינים 2, 4, 8, 16 ו-32 שניות (exponential backoff), עד 5 ניסיונות. ההמתנה הגדלה לא מציפה שרת עמוס.</li>
+      <li><b>400:</b> עוצרים ומדפיסים את הסיבה שהשרת החזיר, כי צריך לתקן את הבקשה.</li>
+      <li><b>קוד לא צפוי:</b> נכשלים בקול.</li>
+    </ul></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p><code>fetch()</code>, ‏<code>BadRequest</code></p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>לשמור תשובות שכבר הורדו, ולא להוריד אותן שוב בכל הרצה</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>הורדה מחדש בכל הרצה מבזבזת זמן ובקשות, ועלולה לשנות את הנתונים.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p><b>Cache:</b> אם הקובץ קיים, מדלגים עליו. הרצה חוזרת מורידה רק מה שחסר.</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>תיקיית <code>data/raw</code> עם קובצי ה-JSON "בדיוק כפי שהתקבלו"</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>הנתונים הגולמיים צריכים להישאר מקור אמת שלא נוגעים בו.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v">
+      <p>102 קבצים, בלי שום עיבוד. בנוסף, ב-Git הגדרנו (<code>.gitattributes</code>) שקבצים בתיקייה <code>data/</code> לא ישתנו אפילו בסימני סוף שורה.</p>
+      <p class="small muted"><b>לדעת בהגנה:</b> התוכן זהה לתשובה של השרת, אבל הקובץ נכתב מחדש עם הזחה (<code>indent=2</code>) לקריאוּת.</p>
+    </div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3><code>sensing.py</code>: לקרוא את קובצי ה-JSON, לאחד לטבלה, להוסיף <code>location</code> ו-<code>date</code>, ולהסיר כפילויות. בלי לפנות ל-API</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>יש 102 קבצים נפרדים. ה-JSON מכיל רק קואורדינטות, בלי שם עיר.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v">
+      <p>לכל קובץ: הבלוק <code>daily</code> הופך לטבלה, <code>time</code> הופך ל-<code>date</code>, ושם העיר נלקח <b>משם הקובץ</b> עם <code>rsplit("_", 1)</code>, כדי ש-<code>new_york</code> לא יתפרק. אם חסר משתנה בקובץ, הסקריפט עוצר עם הודעה. בסוף: איחוד, <code>drop_duplicates</code> לפי עיר ותאריך, ומיון.</p>
+      <p><b>התוצאה:</b> <code>data/raw/sensed_data.csv</code>, ‏36,930 שורות × 12 עמודות, ‏0 כפילויות. אין בקובץ <code>import requests</code> בכלל.</p>
+    </div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>ליצור <code>RainTomorrow</code> בתוך כל מיקום, אחרי מיון לפי תאריך, בלי מידע מהיום הבא כמאפיין, ולמחוק את היום האחרון</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>שלוש טעויות שקטות אפשריות: שורה הבאה שהיא לא באמת מחר (חור בתאריכים), מעבר בין ערים (היום האחרון של עיר אחת מקבל את הגשם של העיר הבאה), ודליפת מידע.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v">
+      <ul>
+        <li>מיון לפי עיר ותאריך, ובדיקה עם <code>diff()</code> שההפרש בין כל שתי שורות הוא יום אחד. נמצאו 0 חורים.</li>
+        <li><code>groupby("location")["precipitation_sum"].shift(-1)</code>, כלומר הזזה <b>בתוך כל עיר</b>.</li>
+        <li>‏<code>&gt;= 1.0</code> נותן 1, ואחרת 0.</li>
+        <li>מחיקת השורה שאין לה מחר: 6 שורות, ולכן 36,924.</li>
+        <li>הגשם של מחר משמש רק לבניית המטרה ולא נשמר כעמודה.</li>
+      </ul>
+      <p><b>התוצאה:</b> 36.2% גשם ו-63.8% יבש.</p>
+    </div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת, סעיף 2. השמירה ל-<code>data/processed/final_dataset.csv</code> בסעיף 6.</p></div></div>
+    <div class="row how"><span class="k">פתוח</span><div class="v"><p>ההוראות לא חד-משמעיות לגבי המיקום. בתיאור השלב זה מופיע אחרי <code>sensing.py</code>, ובנספח כתוב שהמחברת כוללת "יצירת משתנה המטרה". בחרנו במחברת, ושאלנו את המתרגל. אם הוא יגיד <code>sensing.py</code>, מעבירים את חמש השורות לשם ושומרים גם את <code>final_dataset.csv</code> משם.</p></div></div>
+  </div>
+
+  <div class="req part">
+    <div class="req-head"><h3>להתכונן לסט המבחן של חלק ב': קובצי JSON גולמיים שיומרו למאפיינים "לפי הקוד שלכם"</h3><span class="st part">מוכן, עם שאלה פתוחה</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>אותו עיבוד צריך לעבוד גם על הטבלה הגדולה וגם על קובץ JSON בודד. ולא ידוע אם בכל קובץ מבחן יש יום אחד או כמה.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>הפונקציות <code>json_to_days</code> ו-<code>make_features</code> נבדקו על קובץ JSON אמיתי ונתנו תוצאה זהה לטבלה. כל המאפיינים מחושבים מיום אחד בלבד.</p></div></div>
+    <div class="row how"><span class="k">פתוח</span><div class="v"><p>לשאול את המתרגל כמה ימים יש בכל קובץ מבחן. אם יש כמה, אפשר להוסיף ל-<code>make_features</code> מאפייני עבר, כמו גשם אתמול וממוצע של 3 ימים, עם <code>groupby("location").shift(1)</code> ו-<code>rolling(3)</code>, ורק על ימים שלפני היום הנוכחי.</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 2 -->
+<section class="stage" id="s2">
+  <h2>2. הגדרת הבעיה <span class="pts">5 נקודות</span></h2>
+
+  <div class="req todo">
+    <div class="req-head"><h3>תיאור כללי של עולם התוכן: מהי הבעיה המחקרית, ומה עשו מחקרים קודמים</h3><span class="st todo">עוד לא</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>זה פרק טקסט בדוח, בלי קוד. הוא צריך להראות שאתם מבינים למה הבעיה חשובה ואיך מתמודדים איתה היום.</p></div></div>
+    <div class="row how"><span class="k">איך לפתור</span><div class="v"><ul>
+      <li><b>למה זה חשוב:</b> חקלאות והשקיה, תחבורה ותעופה, ניהול מים, אירועים, ותכנון יומיומי.</li>
+      <li><b>איך חוזים היום:</b> חיזוי נומרי (NWP), כלומר מודלים פיזיקליים במחשבי-על, כמו של ECMWF. אלה אותם מוסדות שמייצרים את הנתונים שלנו.</li>
+      <li><b>מחקרי ML:</b> ה-dataset "Rain in Australia" מ-Kaggle מגדיר כמעט בדיוק את אותה בעיה (RainTomorrow, אותו סף). עבודות עליו מדווחות בדרך כלל על רגרסיה לוגיסטית, עצים ו-Random Forest, ועל חוסר איזון דומה. בשנים האחרונות יש גם מודלי deep learning לחיזוי מזג אוויר. כדאי לצטט 2–3 מקורות, שאת בודקת בעצמך.</li>
+    </ul></div></div>
+  </div>
+
+  <div class="req todo">
+    <div class="req-head"><h3>הגדרת שאלת המחקר: מה מצפים לפתור בעזרת מערכות לומדות</h3><span class="st todo">עוד לא</span></div>
+    <div class="row how"><span class="k">איך לפתור</span><div class="v">
+      <p>משפט אחד ברור, למשל: "האם אפשר לחזות אם מחר ירד לפחות 1 מ"מ גשם, מנתוני מזג האוויר של היום בלבד, בשש ערים בעלות אקלים שונה, טוב יותר מ-baseline של 63.8%?"</p>
+      <p>ואחריו מה מצפים ש-ML ייתן: ללמוד מתוך הנתונים קשרים כמו התמדת גשם, עונה לפי עיר וכיוון רוח לפי עיר, בלי לפתור משוואות פיזיקליות. <b>היקף:</b> חצי עמוד עד עמוד.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 3 -->
+<section class="stage" id="s3">
+  <h2>3. הבנת הנתונים <span class="pts">35 נקודות</span></h2>
+  <p class="intro">הכל נמצא במחברת, סעיפים 3 ו-4. מה שנשאר: לבחור גרפים ולנסח את הממצאים בעברית לדוח (שלב 5 למטה).</p>
+
+  <div class="req">
+    <div class="req-head"><h3>מהו מקור הנתונים, וכיצד הנתונים נוצרו</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>סוג הנתונים קובע איך לפרש אותם: מדידות של חיישן, סטטיסטיקה, או משהו אחר?</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>הנתונים הם <b>reanalysis</b>, לא מדידות של חיישן: פלט של מודל אטמוספרי של ECMWF (ERA5, ‏ERA5-Land, ו-IFS מ-2017) שמשלב תצפיות מתחנות, מטוסים, מצופים, מכ"מים ולוויינים ומשלים פערים בחישוב. כל ערך מייצג משבצת של 9–25 ק"מ, וכל ערך יומי מחושב מ-24 ערכים שעתיים. <b>ההשלכות:</b> אין חסרים, הנתונים "חלקים" יותר, והמודל משתנה לאורך השנים. המקור: התיעוד של Open-Meteo.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 3.1</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>לכל משתנה: משמעות וסוג. מהו משתנה המטרה, ואילו ערכים הוא מקבל</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>טבלה של 13 משתנים. שני מקרים מיוחדים: <code>weather_code</code> הוא <b>קטגוריאלי</b> גם שהוא שמור כמספר, וכיוון הרוח הוא <b>מעגלי</b> (359° קרוב ל-1°). <code>precipitation_hours</code> בדיד (0–24), <code>location</code> קטגוריאלי בלי סדר, והמטרה בינארית (0/1).</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 3.1</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>הסתברויות אפריוריות של המטרה, של 3 משתנים רציפים ושל 2 קטגוריאליים, עם משפט על כל אחת</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>המשקעים מוטים מאוד: 45.5% מהימים הם 0 מ"מ בדיוק. גרף רגיל לא מראה כלום.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><ul>
+      <li><b>מטרה:</b> 36.2% / 63.8%, ולפי עיר מ-32.2% (סידני) עד 45.2% (ונקובר).</li>
+      <li><b>רציפים, עם KDE לכל עיר:</b> טמפרטורה (דו-שיאית, חורף וקיץ), משקעים (רק ימים רטובים, בסקאלה לוגריתמית), רוח (מוטה ימינה, ונקובר רגועה, טוקיו עם זנב של טייפונים).</li>
+      <li><b>קטגוריאליים, עם גרף עמודות:</b> עיר (6,154 ימים לכל אחת), ו-<code>weather_code</code> (13 קודים, "מעונן" כ-35%, בלי סופות רעמים).</li>
+    </ul></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 2 (המטרה) ו-3.2</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>האם הנתונים מאוזנים? האם הם מייצגים את המציאות?</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p><b>איזון:</b> 1:2, חוסר איזון מתון. ה-baseline הוא 63.8%, ולכן בחלק ב' צריך מדדים מעבר ל-accuracy. <b>ייצוגיות:</b> רק 6 ערים ממוזגות, 5 בצפון ואחת בדרום, ונתוני מודל. אחוז הגשם השנתי 33–40% בלי מגמה ברורה, אבל המבחן יגיע מאותן ערים.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 3.3</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>לפחות 3 קשרים מעניינים, צפויים ולא צפויים, עם הסבר</h3><span class="st ok">בוצע, 4 קשרים</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>מפת מתאמים כללית מראה רק את הברור מאליו. משתנים כמו כיוון רוח ועונה נראים בה "חסרי קשר".</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v">
+      <p>קודם מפת מתאמי <b>Spearman</b> (בגלל ההטיה), ואחריה ארבעה קשרים לעומק:</p>
+      <ol>
+        <li><b>התמדה (צפוי):</b> אחרי יום גשום 55.7% גשם מחר, ואחרי יום יבש 25.2%.</li>
+        <li><b>עונה × עיר:</b> ונקובר גשומה בחורף (64%), טוקיו בקיץ, סידני הפוכה. לכן חודש לבד לא עוזר.</li>
+        <li><b>כיוון הרוח (לא צפוי):</b> בכל עיר כיוון אחר מביא גשם. בוונקובר דווקא מזרח (72%), ומערב רק 22%. ההשפעות מתבטלות כשמערבבים את הערים.</li>
+        <li><b>טווח טמפרטורה (פחות צפוי):</b> 6.5° לפני גשם, לעומת 7.9° לפני יום יבש. עננים מצמצמים את ההפרש.</li>
+      </ol>
+    </div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 3.4, ‏3.5</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>מאפיינים שחשודים כמשפיעים על המטרה (ומומלץ לבדוק)</h3><span class="st ok">בוצע, כולל בדיקה</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>השערות מתוך ידע כללי, ואחריהן בדיקה עם התפלגויות מותנות. שעות משקעים הן החזקות ביותר (חציון 5 שעות לעומת 0). <code>weather_code</code> בונה "מדרגות", מ-5% אחרי יום בהיר עד 62%. לרוח יש השפעה חלשה, ולטמפרטורה לבד כמעט אין.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 3.6</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>משתנים שאפשר להסיר, ובדיקה של ההנחה</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>ארבעת משתני הטמפרטורה עם מתאם 0.92–0.99. בדקנו ש-<code>rain_sum</code> שונה מ-<code>precipitation_sum</code> <b>בדיוק</b> בימים עם קודי השלג 71, 73 ו-75. ההנחה לא רק נאמרה, היא נבדקה.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 3.7</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>איכות: נתונים חסרים, מה אפשר לומר עליהם, ומה לעשות איתם</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>0 חסרים, 0 כפילויות, 6,154 ימים לכל עיר. <b>ההסבר:</b> reanalysis מייצר ערך לכל שעה. <b>ההחלטה:</b> אין מה להשלים. ההוראות מתירות לכתוב "לא רלוונטי" עם הסבר.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 4.1</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>איכות: נתונים לא הגיוניים (למשל מינימום מעל המקסימום), ומה לעשות איתם</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>10 בדיקות היגיון, כל אחת כמסכה של True/False. נמצאו רק שני מקרים של עיגול: לונדון 31.12.2016, שבו הממוצע נמוך מהמינימום ב-0.6°, ו-70 ימי שלג קל עם 0.0 מ"מ (הדיוק הוא 0.1 מ"מ). <b>ההחלטה:</b> משאירים.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 4.2</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>איכות: תובנות נוספות על הנתונים</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><ul>
+      <li><b>ערכים קיצוניים:</b> 11 ימים עם יותר מ-100 מ"מ. כולם עקביים עם שאר המשתנים, וחלקם סערות ידועות: טייפון Hagibis, ושרידי ההוריקן Ida. ניו יורק 4.10.2022 עם 183.6 מ"מ היא כנראה הגזמה של המודל באירוע אמיתי. <b>ההחלטה:</b> משאירים.</li>
+      <li><b>החלפת מודל המקור:</b> מהירות הרוח קופצת בכל הערים בינואר 2017 (טוקיו מ-21 ל-30 קמ"ש בחודש אחד) ושוב בסוף 2024. זה distribution shift שנגרם ממקור הנתונים, וזו הסיבה שמהירות הרוח הוצאה.</li>
+    </ul></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 4.3–4.5</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 4 -->
+<section class="stage" id="s4">
+  <h2>4. הכנת הנתונים <span class="pts">30 נקודות</span></h2>
+  <p class="intro">הכל בפונקציה אחת, <code>make_features</code>. <b>שני כללים:</b> כל מאפיין מחושב מיום אחד בלבד, ושום דבר לא נלמד מהנתונים. כך אין דליפה, והפונקציה עובדת גם על קובץ JSON בודד.</p>
+
+  <div class="req">
+    <div class="req-head"><h3>בחירת מאפיינים: השמטת מאפיינים רועשים או חסרי חשיבות</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><ul>
+      <li><b>הוצאו:</b> טמפרטורות max, ‏min ו-apparent (כפולות; נשארו הממוצע ו-<code>temp_range</code>), ‏<code>rain_sum</code> (כפול; נשאר דגל שלג).</li>
+      <li><b>מהירות הרוח</b> הוצאה כי היא לא יציבה בין מודלים.</li>
+      <li><b><code>feels_minus_actual</code></b> נבדק עם Mutual Information, קיבל כמעט 0, והוצא.</li>
+    </ul><p>מאפיינים עם MI נמוך שנשארו (עיר, עונה, חודש) נשארו בגלל אינטראקציות שראינו ב-EDA.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 5.1, ‏5.4</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>השמטת מאפיינים באיכות נמוכה (שגיאות, ערכים חסרים)</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>לפי הגדרת ההוראות, אף משתנה לא באיכות נמוכה. מהירות הרוח היא המקרה הקרוב ביותר: היא לא שגויה, אבל הסקאלה שלה משתנה בין תקופות. לכן הוצאה.</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>השמטת תצפיות עם הרבה חוסרים, והשלמה מושכלת של חסרים</h3><span class="st ok">לא רלוונטי, ומוסבר</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>אין חסרים, ולכן לא נמחקה שום שורה ולא הושלם שום ערך. <b>לחלק ב':</b> אם בקובץ מבחן יופיע <code>null</code>, צריך לבדוק לפני החיזוי. השלמה מומלצת: אינטרפולציה בזמן בתוך אותה עיר, או ערך מסט האימון בלבד, כדי לא ליצור דליפה.</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>דיסקרטיזציה של משתנים רציפים (לפי ההתפלגות או לפי דרישות התחום)</h3><span class="st ok">בוצע</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>חלוקה לפי רוחב שווה נכשלת בגלל הזנב עד 183 מ"מ. חלוקה לפי אחוזונים נכשלת בגלל 45.5% אפסים.</p></div></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v">
+      <p><b>ספים מהתחום</b> למשקעים: 0 (dry), פחות מ-1 (trace, מתחת לסף המטרה), 1–10 (moderate), ו-10 ומעלה (heavy). <b>אימות:</b> הסיכוי לגשם מחר עולה בכל קטגוריה, 21%, ‏35%, ‏52%, ‏66%.</p>
+      <p>בנוסף, <code>weather_code</code> קובץ ל-7 קבוצות לפי סוג ועוצמה, כולל קודים שלא מופיעים אצלנו (סופות רעמים), כדי שכל קוד במבחן יקבל קבוצה.</p>
+    </div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 5.2, ‏5.4</p></div></div>
+  </div>
+
+  <div class="req">
+    <div class="req-head"><h3>גזירת מאפיינים חדשים (פונקציות של משתנים קיימים)</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><ul>
+      <li><code>rain_today</code> (1 מ"מ או יותר היום), ו-<code>snow_today</code> (סך המשקעים פחות הגשם).</li>
+      <li><code>temp_range</code>: מקסימום פחות מינימום.</li>
+      <li><code>wind_dir_sin/cos</code>: כיוון הרוח כנקודה על מעגל, כך ש-359° ו-1° יוצאים קרובים.</li>
+      <li><code>month_sin/cos</code>, ועונה <b>לפי חצי כדור</b>, כי בסידני העונות הפוכות.</li>
+      <li>One-Hot לעיר, לעונה, לקבוצת מזג האוויר ולקטגוריית המשקעים, עם <b>רשימה קבועה של קטגוריות</b>, כדי שגם יום בודד יקבל את כל העמודות.</li>
+    </ul>
+    <p><b>אימות:</b> הפונקציה הורצה על JSON אמיתי ונתנה תוצאה זהה לטבלה. <b>התוצאה:</b> <code>final_dataset.csv</code> עם 36,924 × 34: ‏2 מזהים, 31 מאפיינים, ומטרה.</p></div></div>
+    <div class="row where"><span class="k">איפה</span><div class="v"><p>מחברת 5.3–5.6</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 5 -->
+<section class="stage" id="s5">
+  <h2>5. איכות הדוח, Python ותרשימים <span class="pts">5 + 5 נקודות</span></h2>
+
+  <div class="req part">
+    <div class="req-head"><h3>רמת השימוש ב-Python (מקיף, חלקי, או בכלל לא)</h3><span class="st ok">בוצע</span></div>
+    <div class="row sol"><span class="k">הפתרון</span><div class="v"><p>כל שלב עשוי בקוד: איסוף, חישה, EDA עם 13 גרפים, בדיקות איכות, פונקציית מאפיינים, MI, ובדיקה אוטומטית על JSON.</p></div></div>
+  </div>
+
+  <div class="req part">
+    <div class="req-head"><h3>תרשימים: כותרות, שמות צירים ושנתות, קריאוּת ואסתטיקה</h3><span class="st part">חלקי</span></div>
+    <div class="row sol"><span class="k">מה יש</span><div class="v"><p>לכל גרף במחברת יש כותרת, צירים עם יחידות ומקרא. צבע קבוע לכל עיר לאורך כל המחברת (<code>CITY_COLORS</code>). התיקייה <code>report_figures</code> כבר מכילה 3 גרפים ברזולוציה גבוהה.</p></div></div>
+    <div class="row how"><span class="k">מה חסר</span><div class="v"><p>לבחור 8–10 גרפים לדוח (מומלצים: KDE, ‏<code>weather_code</code>, מתאמים, גרף קוטבי של הרוח, רוח לפי שנה, MI). לייצא אותם <b>מתוך המחברת</b> עם <code>plt.savefig("report_figures/....png", dpi=200, bbox_inches="tight")</code>, כדי שאפשר יהיה לשחזר אותם. הקוד שיצר את 3 הגרפים הקיימים לא נמצא בתיקייה.</p></div></div>
+  </div>
+
+  <div class="req todo">
+    <div class="req-head"><h3>דוח PDF: עד 10 עמודים, Arial 12, רווח שורה וחצי, עמוד שער עם מספר קבוצה ות"ז בלבד</h3><span class="st todo">עוד לא</span></div>
+    <div class="row"><span class="k">הבעיה</span><div class="v"><p>הרבה תוכן, מעט מקום. חריגה מהפורמט מורידה נקודות.</p></div></div>
+    <div class="row how"><span class="k">איך לפתור</span><div class="v">
+      <p><b>חלוקה מוצעת לעמודים:</b> איסוף וחישה 1.5 · הגדרת הבעיה 0.5–1 · הבנת הנתונים ואיכות 4 · הכנה 3 · סיכום 0.5. השער ותוכן העניינים לא נספרים.</p>
+      <p>כל ממצא נכתב במבנה <b>למה עשינו ← מה יצא ← מה למדנו ← מה ההשלכה</b>, עם גרף ומשפט מסקנה. הטקסט במחברת ובמסמכי ההסבר הוא חומר גלם מוכן לתרגום. מייצאים ל-PDF מ-Word, ובודקים פעם אחרונה: פונט, רווח, מספר עמודים, ושאין שמות בעמוד השער.</p>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 6 -->
+<section class="stage" id="s6">
+  <h2>6. בונוס <span class="pts">עד 5 נקודות</span></h2>
+  <div class="req part">
+    <div class="req-head"><h3>חשיבה עצמאית, תובנות לא טריוויאליות, הצגה מקורית (לא תרשימים בלי הסבר)</h3><span class="st part">יש מועמדים</span></div>
+    <div class="row sol"><span class="k">המועמדים</span><div class="v"><ol>
+      <li><b>החלפת מודל המקור</b> שנמצאה בנתונים (2017, סוף 2024) והוכחה מול התיעוד. זה distribution shift אמיתי, עם השלכה על המאפיינים ועל חלק ב'.</li>
+      <li><b>כיוון הרוח לפי עיר</b> בגרפים קוטביים: מתאם כללי חלש מסתיר השפעה חזקה. בוונקובר זו דווקא רוח מזרחית, והדפוס נשמר גם אחרי החלפת המודל.</li>
+      <li><b>פונקציית מאפיינים מוכנה למבחן</b>, שנבדקה אוטומטית על JSON.</li>
+    </ol></div></div>
+    <div class="row how"><span class="k">מה חסר</span><div class="v"><p>להבליט את שלושת אלה בדוח, עם גרף והסבר קצר לכל אחד. אפשר גם לאמת במקור חיצוני את ההסבר לרוח המזרחית בוונקובר, כדי שיהיה עובדה ולא השערה.</p></div></div>
+  </div>
+</section>
+
+<!-- ============================================================ 7 -->
+<section class="stage" id="s7">
+  <h2>7. הגשה וקבצים (נספח)</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>קובץ</th><th>מצב</th><th>מה חסר / איך להשלים</th></tr></thead>
+    <tbody>
+      <tr><td>דוח PDF</td><td><span class="st todo">עוד לא</span></td><td>ראו שלב 5</td></tr>
+      <tr><td><code>data_collection.py</code></td><td><span class="st ok">בוצע</span></td><td></td></tr>
+      <tr><td><code>sensing.py</code></td><td><span class="st ok">בוצע</span></td><td></td></tr>
+      <tr><td><code>data/raw/</code> (102 JSON)</td><td><span class="st ok">בוצע</span></td><td></td></tr>
+      <tr><td><code>data/raw/sensed_data.csv</code></td><td><span class="st ok">בוצע</span></td><td></td></tr>
+      <tr><td><code>data/processed/final_dataset.csv</code></td><td><span class="st ok">בוצע</span></td><td>36,924 × 34, אחרי ההכנה</td></tr>
+      <tr><td><code>dataset_creation.ipynb</code> עם פלטים</td><td><span class="st ok">בוצע</span></td><td>הרצה אחרונה (Restart &amp; Run All) לפני ההגשה, ואחרי הוספת ייצוא הגרפים</td></tr>
+      <tr><td><code>requirements.txt</code></td><td><span class="st part">לבדוק</span></td><td>קיים. לוודא שאין חבילה שחסרה או מיותרת (<code>pip freeze</code>)</td></tr>
+      <tr><td><code>README.md</code></td><td><span class="st part">לעדכן</span></td><td>השורה הראשונה תקינה (<code>Group: 58</code>). לעדכן את המבנה ואת הוראות ההרצה לפי המצב הנוכחי</td></tr>
+      <tr><td><code>Group_58.zip</code></td><td><span class="st todo">עוד לא</span></td><td>לארוז רק את הקבצים הנדרשים. בלי <code>.venv</code>, ‏<code>.ipynb_checkpoints</code>, ‏<code>__pycache__</code>, ‏<code>desktop.ini</code>, ובלי קבצי העזר שלנו (קובצי ה-HTML, ‏<code>HANDOFF.md</code>). אחד מחברי הקבוצה מגיש במודל</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><b>שתי שאלות פתוחות למתרגל, ששווה לשלוח כבר עכשיו:</b>
+    <ol>
+      <li>האם <code>RainTomorrow</code> צריך להיווצר ב-<code>sensing.py</code> או במחברת?</li>
+      <li>כמה ימים יש בכל קובץ JSON של סט המבחן בחלק ב'?</li>
+    </ol>
+  </div>
+</section>
+
+<footer>קבוצה 58 · נכתב ב-16 בנובמבר 2026, לפי <code>ML_Project_Part_A_Instructions.docx</code>, הקוד והמחברת. מקורות מפורטים: מסמכי ההסבר בעברית וקורס ההכנה להגנה.</footer>
+</div>
